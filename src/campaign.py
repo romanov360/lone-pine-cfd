@@ -8,6 +8,7 @@ parallel and so a failure in one does not cost the others.
 from __future__ import annotations
 
 import json
+import os
 import re
 import sys
 import time
@@ -155,7 +156,7 @@ def creek_study(Us=(0.0, 0.01, 0.02, 0.05, 0.10, 0.20), dx=1.2e-3,
 # ---------------------------------------------------------------------------
 
 
-def head_to_head(dx=1.5e-3, t_end=360.0, k_eff_mult=5.0):
+def head_to_head(dx=1.5e-3, t_end=360.0, k_eff_mult=5.0, only=None):
     """
     Same bottle, same mesh, same solver; only the boundary conditions differ.
 
@@ -176,6 +177,10 @@ def head_to_head(dx=1.5e-3, t_end=360.0, k_eff_mult=5.0):
                 up_D=2.0, down_D=4.5, half_H=0.13, k_eff_mult=k_eff_mult,
                 record_every=2.0, snapshots=(20.0, 120.0, 300.0)),
     ]
+    if only:
+        cases = [c for c in cases if only in c.name]
+        if not cases:
+            raise SystemExit(f"no head-to-head case matching {only!r}")
     recs = []
     for c in cases:
         print(f"   {c.name} ...", flush=True)
@@ -197,13 +202,27 @@ def head_to_head(dx=1.5e-3, t_end=360.0, k_eff_mult=5.0):
               f"stratification {s['T_bath_top_final']-s['T_bath_bot_final']:+.2f} K, "
               f"dE={s['energy_drift_pct']:+.3f}%  ({s['wall_time_s']/60:.1f} min)",
               flush=True)
-    _save("head2head", recs)
+    # Merge rather than overwrite: the box and creek cases are expensive
+    # enough that they are often run separately, and the second run should not
+    # discard the first.
+    path = "results/data/cfd_h2h.json"
+    existing = []
+    if os.path.exists(path):
+        existing = json.load(open(path)).get("records", [])
+    names = {r["name"] for r in recs}
+    merged = [r for r in existing if r["name"] not in names] + recs
+    _save("h2h", merged)
     return recs
 
 
 if __name__ == "__main__":
     what = sys.argv[1]
     t0 = time.time()
-    {"grid": grid_study, "boxsize": box_size_study, "creek": creek_study,
-     "h2h": head_to_head}[what]()
+    fns = {"grid": grid_study, "boxsize": box_size_study, "creek": creek_study,
+           "h2h": head_to_head}
+    if what == "h2h" and len(sys.argv) > 2:
+        # e.g.  python3 src/campaign.py h2h creek
+        head_to_head(only=sys.argv[2])
+    else:
+        fns[what]()
     print(f"total {time.time()-t0:.0f} s")
