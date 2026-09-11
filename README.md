@@ -28,6 +28,8 @@ enough box simply never gets the job done at any stirring rate.
 
 ## Where the resistance actually sits
 
+![Resistance chain](results/figures/01_resistance_chain.png)
+
 This is the whole explanation, and it is why the answer is less dramatic than
 expected:
 
@@ -42,6 +44,10 @@ Going from still water to a fast 1.5 m/s current multiplies the external film
 coefficient by 9.2 and the overall U by 1.35. The 3 mm glass wall alone is worth an equivalent film
 coefficient of only 317 W/m²K — less than *still* water already provides. Past
 about 0.3 m/s the creek is pushing on a door that is already open.
+
+![Film coefficient against current](results/figures/03_h_vs_velocity.png)
+
+![Cooling curves](results/figures/02_cooling_curves.png)
 
 ## Things that matter more than whether the water is moving
 
@@ -79,6 +85,10 @@ bundles three different things, and they do not agree with each other:
 3. **Bubbles help by stirring.** Rising bubbles drag liquid with them at
    ~0.2 m/s. That is the entire benefit of aeration, and it is large — but only
    where there was no motion to begin with.
+
+![Aeration](results/figures/04_aeration.png)
+
+![Dissolved oxygen versus bubbles](results/figures/05_dissolved_oxygen.png)
 
 | net change in h | still box | creek 0.05 m/s | creek 0.35 m/s | creek 1.0 m/s |
 |---|---|---|---|---|
@@ -127,6 +137,8 @@ Boussinesq buoyancy, van Leer TVD advection, a separable Poisson solver, an
 immersed solid by Brinkman penalisation, and a single-domain conjugate energy
 equation. It is verified and validated before use:
 
+![Validation benchmarks](results/figures/06_validation.png)
+
 | benchmark | reference | result |
 |---|---|---|
 | Poisson operator | manufactured solution | 2.00 order, both BC types |
@@ -146,6 +158,8 @@ quiescent medium. A box is not one:
 | 18 × 26 cm | 0.79 D | 419 ± 9 | 81 % | +3.4 K | +7.2 K |
 | 26 × 34 cm | 1.36 D | 444 ± 11 | 85 % | +1.7 K | +4.0 K |
 | 40 × 46 cm | 2.36 D | 445 ± 10 | 86 % | +0.8 K | +2.1 K |
+
+![Temperature fields in the still box](results/figures/09_fields.png)
 
 Confinement alone costs 27 % in a tight tub. The bottle's own plume builds a
 warm stratified layer that descends past it, so within a few minutes its upper
