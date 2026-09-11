@@ -479,60 +479,85 @@ def fig_crossover():
 
 
 def fig_fields():
-    """Temperature and flow around the bottle, from the head-to-head runs."""
+    """
+    Temperature fields from the head-to-head runs.
+
+    The two rows have different domains -- a closed 24 x 30 cm box and an
+    open 45 x 26 cm channel -- so the row heights are set from the true
+    aspect ratios rather than forcing them into one grid, which would
+    misrepresent the geometry.
+    """
     import glob
-    files = sorted(glob.glob("results/data/field_*.npz"))
+
+    import matplotlib.gridspec as gridspec
+
+    files = sorted(glob.glob("results/data/field_*.npz"),
+                   key=lambda f: 0 if "still_box" in f else 1)
     if not files:
         return None
-    panels = []
+
+    rows = []
     for f in files:
         d = np.load(f)
-        name = f.split("field_")[1].replace(".npz", "").replace("_", " ")
-        for t in (20, 120, 300):
-            key = f"snapT_{t}"
-            if key in d:
-                panels.append((name, t, d[key], d["outer"], float(d["dx"])))
-        panels.append((name, None, d["T"], d["outer"], float(d["dx"])))
+        name = "Still box" if "still_box" in f else "Creek, 0.02 m/s"
+        dx = float(d["dx"])
+        # Only the matched snapshot times, so the two rows are directly
+        # comparable. The final-state field is dropped: the two runs ended at
+        # different times (360 s for the box, 300 s for the creek), so putting
+        # them side by side would invite exactly the wrong comparison.
+        panels = [(t, d[f"snapT_{t}"]) for t in (20, 120, 300)
+                  if f"snapT_{t}" in d]
+        rows.append({"name": name, "dx": dx, "outer": d["outer"],
+                     "panels": panels})
 
-    n = len(panels)
-    ncol = min(4, n)
-    nrow = int(np.ceil(n / ncol))
-    fig, axes = plt.subplots(nrow, ncol, figsize=(3.2 * ncol, 4.6 * nrow),
-                             squeeze=False)
+    ncol = max(len(r["panels"]) for r in rows)
+    aspects = [r["panels"][0][1].shape[1] / r["panels"][0][1].shape[0]
+               for r in rows]          # height / width of each domain
+    W = 3.35 * ncol
+    heights = [W / ncol * a for a in aspects]
+    fig = plt.figure(figsize=(W + 1.1, sum(heights) + 1.5))
+    gs = gridspec.GridSpec(len(rows), ncol, figure=fig,
+                           height_ratios=aspects, hspace=0.42, wspace=0.28,
+                           left=0.055, right=0.9, top=0.9, bottom=0.06)
+
     vmin, vmax = 10.0, 15.5
     im = None
-    for ax, (name, t, T, outer, dx) in zip(axes.ravel(), panels):
-        nx, ny = T.shape
-        Tm = np.ma.masked_where(outer, T)
-        im = ax.imshow(Tm.T, origin="lower", cmap="RdYlBu_r",
-                       extent=[0, nx * dx * 100, 0, ny * dx * 100],
-                       vmin=vmin, vmax=vmax, interpolation="bilinear")
-        ax.contour(np.linspace(0, nx * dx * 100, nx),
-                   np.linspace(0, ny * dx * 100, ny), Tm.T,
-                   levels=np.arange(10.15, vmax, 0.35), colors="k",
-                   linewidths=0.25, alpha=0.3)
-        xs, ys = np.where(outer)
-        ax.add_patch(plt.Rectangle(
-            (xs.min() * dx * 100, ys.min() * dx * 100),
-            (xs.max() - xs.min() + 1) * dx * 100,
-            (ys.max() - ys.min() + 1) * dx * 100,
-            fc="#cfcec9", ec=INK, lw=1.0, zorder=5))
-        ax.set_title(f"{name}, t = {t} s" if t else f"{name}, final",
-                     fontsize=9.5)
-        ax.set_xlabel("cm", fontsize=8); ax.set_ylabel("cm", fontsize=8)
-        ax.tick_params(labelsize=7.5)
-        ax.grid(False)
-        for sp in ax.spines.values():
-            sp.set_visible(False)
-    for ax in axes.ravel()[n:]:
-        ax.set_visible(False)
-    if im is not None:
-        cb = fig.colorbar(im, ax=axes.ravel().tolist(), pad=0.015, shrink=0.7,
-                          aspect=30)
-        cb.set_label("water temperature ($^\\circ$C)", color=INK2)
-        cb.outline.set_visible(False)
-    fig.suptitle("The bottle's own plume warms the water it is sitting in",
-                 x=0.02, ha="left", fontsize=12, fontweight="600", color=INK)
+    for i, r in enumerate(rows):
+        for j, (t, T) in enumerate(r["panels"]):
+            ax = fig.add_subplot(gs[i, j])
+            nx, ny = T.shape
+            dx = r["dx"]
+            Tm = np.ma.masked_where(r["outer"], T)
+            im = ax.imshow(Tm.T, origin="lower", cmap="RdYlBu_r",
+                           extent=[0, nx * dx * 100, 0, ny * dx * 100],
+                           vmin=vmin, vmax=vmax, interpolation="bilinear")
+            ax.contour(np.linspace(0, nx * dx * 100, nx),
+                       np.linspace(0, ny * dx * 100, ny), Tm.T,
+                       levels=np.arange(10.15, vmax, 0.35), colors="k",
+                       linewidths=0.25, alpha=0.3)
+            xs, ys = np.where(r["outer"])
+            ax.add_patch(plt.Rectangle(
+                (xs.min() * dx * 100, ys.min() * dx * 100),
+                (xs.max() - xs.min() + 1) * dx * 100,
+                (ys.max() - ys.min() + 1) * dx * 100,
+                fc="#cfcec9", ec=INK, lw=1.0, zorder=5))
+            ax.set_title(f"t = {t} s", fontsize=9.5, color=INK2)
+            if j == 0:
+                ax.set_ylabel(f"{r['name']}\ncm", fontsize=9.5, color=INK)
+            ax.set_xlabel("cm", fontsize=8)
+            ax.tick_params(labelsize=7.5)
+            ax.grid(False)
+            for sp in ax.spines.values():
+                sp.set_visible(False)
+
+    cax = fig.add_axes([0.915, 0.12, 0.016, 0.72])
+    cb = fig.colorbar(im, cax=cax)
+    cb.set_label("water temperature ($^\\circ$C)", color=INK2)
+    cb.outline.set_visible(False)
+    fig.suptitle("The still box warms the water the bottle sits in; "
+                 "the creek carries it away",
+                 x=0.055, y=0.965, ha="left", fontsize=12.5,
+                 fontweight="600", color=INK)
     return save(fig, "09_fields")
 
 
