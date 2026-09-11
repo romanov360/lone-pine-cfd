@@ -75,8 +75,8 @@ def grid_study(dxs=(2.0e-3, 1.5e-3, 1.0e-3, 0.75e-3), t_end=60.0):
 # ---------------------------------------------------------------------------
 
 
-def box_size_study(sizes=((0.12, 0.20), (0.18, 0.24), (0.24, 0.30),
-                          (0.36, 0.40)), dx=1.0e-3, t_end=60.0):
+def box_size_study(sizes=((0.12, 0.20), (0.18, 0.26), (0.26, 0.34),
+                          (0.40, 0.46)), dx=1.25e-3, t_end=180.0):
     print("B. Box size: how much does confinement matter?")
     recs = []
     for W, H in sizes:
@@ -84,15 +84,17 @@ def box_size_study(sizes=((0.12, 0.20), (0.18, 0.24), (0.24, 0.30),
                     box_W=W, box_H=H, t_end=t_end, isothermal_bottle=True,
                     T_bottle0=25.0, T_bath0=10.0, record_every=1.0, n_proj=1)
         r = run(c, verbose=False)
-        tail = np.asarray(r["t"]) > 0.6 * t_end
+        tail = np.asarray(r["t"]) > 0.5 * t_end
         s = summarise(r)
-        s["h_quasi_steady"] = float(np.nanmean(np.asarray(r["h_eff"])[tail]))
+        h_tail = np.asarray(r["h_eff"])[tail]
+        s["h_quasi_steady"] = float(np.nanmean(h_tail))
+        s["h_std"] = float(np.nanstd(h_tail))
         s["W"], s["H"] = W, H
         s["gap_D"] = (W - 0.070) / 2 / 0.070
         s["series"] = _series(r)
         recs.append(s)
         print(f"   {W*100:5.1f} x {H*100:5.1f} cm  side gap = {s['gap_D']:4.2f} D  "
-              f"h={s['h_quasi_steady']:7.1f}  bath +{s['T_bath_final']-10:.3f} K  "
+              f"h={s['h_quasi_steady']:6.1f}+/-{s['h_std']:4.1f}  bath +{s['T_bath_final']-10:.3f} K  "
               f"top-bottom split {s['T_bath_top_final']-s['T_bath_bot_final']:+.3f} K  "
               f"({s['wall_time_s']:.0f} s)", flush=True)
     _save("boxsize", recs)
