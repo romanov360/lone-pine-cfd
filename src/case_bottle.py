@@ -175,7 +175,13 @@ def run(case: CFDCase, verbose: bool = True, progress_every: float = 60.0):
             Q, per = s.interface_heat_rate(outer)
             # Surface temperature: mean over the outermost shell cells.
             surf = T[outer].max() if case.isothermal_bottle else _surface_T(T, outer)
-            dT = surf - T_bath
+            # Reference temperature for h. In a closed box the bath mean IS the
+            # far field. In a channel it is not: the warm wake stretches
+            # downstream and drags the domain mean up, which would report a
+            # slow creek as having a LOWER h than no creek at all. The free
+            # stream is the inlet temperature.
+            T_ref = case.T_bath0 if case.mode == "creek" else T_bath
+            dT = surf - T_ref
             h = Q / (per * dT) if abs(dT) > 1e-6 and per > 0 else np.nan
             ny = dom.ny
             hist["t"].append(s.t)

@@ -106,19 +106,21 @@ def box_size_study(sizes=((0.12, 0.20), (0.18, 0.26), (0.26, 0.34),
 # ---------------------------------------------------------------------------
 
 
-def creek_study(Us=(0.0, 0.005, 0.01, 0.02, 0.05, 0.10), dx=1.0e-3, t_end=45.0):
+def creek_study(Us=(0.0, 0.005, 0.01, 0.02, 0.05, 0.10), dx=1.2e-3, t_end=45.0):
     print("C. Creek velocity: h versus current")
     import correlations as co
     recs = []
     for U in Us:
         c = CFDCase(f"creek U={U}", mode="creek", U=U, dx=dx, t_end=t_end,
                     isothermal_bottle=True, T_bottle0=25.0, T_bath0=10.0,
-                    up_D=3.0, down_D=8.0, half_H=0.13,
+                    up_D=2.5, down_D=6.5, half_H=0.13,
                     record_every=1.0, n_proj=1)
         r = run(c, verbose=False)
         tail = np.asarray(r["t"]) > 0.55 * t_end
         s = summarise(r)
-        s["h_quasi_steady"] = float(np.nanmean(np.asarray(r["h_eff"])[tail]))
+        h_tail = np.asarray(r["h_eff"])[tail]
+        s["h_quasi_steady"] = float(np.nanmean(h_tail))
+        s["h_std"] = float(np.nanstd(h_tail))
         s["h_correlation"] = co.h_external(0.070, 0.161, U, 25.0, 10.0)
         s["series"] = _series(r)
         recs.append(s)
@@ -135,15 +137,15 @@ def creek_study(Us=(0.0, 0.005, 0.01, 0.02, 0.05, 0.10), dx=1.0e-3, t_end=45.0):
 # ---------------------------------------------------------------------------
 
 
-def head_to_head(dx=1.5e-3, t_end=600.0, k_eff_mult=5.0):
+def head_to_head(dx=1.5e-3, t_end=360.0, k_eff_mult=5.0):
     print("D. Transient head-to-head, conjugate bottle, identical mesh")
     cases = [
         CFDCase("still box", mode="box", U=0.0, dx=dx, box_W=0.24, box_H=0.30,
                 t_end=t_end, k_eff_mult=k_eff_mult, record_every=2.0,
-                snapshots=(30.0, 150.0, 400.0)),
+                snapshots=(20.0, 120.0, 300.0)),
         CFDCase("creek 0.02 m/s", mode="creek", U=0.02, dx=dx, t_end=t_end,
                 up_D=3.0, down_D=8.0, half_H=0.15, k_eff_mult=k_eff_mult,
-                record_every=2.0, snapshots=(30.0, 150.0, 400.0)),
+                record_every=2.0, snapshots=(20.0, 120.0, 300.0)),
     ]
     recs = []
     for c in cases:

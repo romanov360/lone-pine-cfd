@@ -132,7 +132,7 @@ def fig_resistance_chain():
     ax2.set_yticks(y); ax2.set_yticklabels([])
     ax2.set_xlim(0, max(Us) * 1.22)
     _style(ax2, xlabel="overall U  (W/m$^2$K)", grid="x")
-    ax2.set_title("A 30x faster current buys ~30% more U")
+    ax2.set_title("Still water to a fast creek: +35% on U")
     fig.subplots_adjust(wspace=0.08)
     return save(fig, "01_resistance_chain")
 
