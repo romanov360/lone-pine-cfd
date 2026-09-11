@@ -354,10 +354,13 @@ ul.notes li{margin-bottom:.5em;}
       <th>Bath warmed</th><th>Top &minus; bottom</th></tr></thead><tbody></tbody></table></div>
     <p class="foot">The film coefficient plateaus at 445 W/m&sup2;K once the side gap exceeds
     about one bottle diameter &mdash; the 26 cm and 40 cm boxes agree to 0.4 % &mdash; and
-    collapses to 323 when the gap closes to a third of a diameter. Confinement alone costs
-    27 % in a tight tub. The narrow box does two things to itself at once: it recirculates
-    water the bottle has already warmed, and it stratifies, so the warmest water pools at the
-    top, exactly where the bottle is.</p>
+    collapses to 323 when the gap closes to a third of a diameter. <strong>Confinement is the
+    fall below that plateau, and it costs 27 % in a tight tub.</strong> The narrow box does
+    two things to itself at once: it recirculates water the bottle has already warmed, and it
+    stratifies, so the warmest water pools at the top, exactly where the bottle is. The
+    separate offset between the plateau and the correlation's 520 is the solver's own 2-D
+    limit at Ra &asymp; 10<sup>9</sup>, not confinement &mdash; the next table pins that
+    down.</p>
   </div>
   <div class="fig">
     <h3>The same five minutes, seen two ways</h3>
@@ -379,9 +382,11 @@ ul.notes li{margin-bottom:.5em;}
   </div>
   <div class="fig">
     <h3>In open water the correlation is right; in a box it is not</h3>
-    <p class="cap">The same CFD, same bottle, run in a channel instead of a box. Here the
-    textbook mixed-convection correlation is reproduced almost exactly &mdash; which is what
-    makes the box result above meaningful rather than a solver artefact.</p>
+    <p class="cap">The same CFD and the same bottle, run in a channel instead of a box.
+    With a current the textbook mixed-convection correlation is reproduced almost exactly.
+    Without one it is not &mdash; and the first row, which matches the large boxes above
+    rather than sitting above them, is how we know that offset is the solver's own limit
+    rather than confinement.</p>
     <div class="scroll"><table id="creektable"><thead><tr>
       <th>Setting</th><th>h from CFD</th><th>correlation</th><th>ratio</th>
       </tr></thead><tbody></tbody></table></div>

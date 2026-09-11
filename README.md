@@ -161,11 +161,20 @@ quiescent medium. A box is not one:
 
 ![Temperature fields in the still box](results/figures/09_fields.png)
 
-Confinement alone costs 27 % in a tight tub. The bottle's own plume builds a
-warm stratified layer that descends past it, so within a few minutes its upper
-half is sitting in water it warmed itself. Run the same solver in an open
-channel instead and the mixed-convection correlation is reproduced to within
-1 % at 0.01 m/s — so the box discrepancy is physics, not a solver artefact.
+The film coefficient plateaus at 445 W/m²K once the side gap exceeds about one
+bottle diameter, and **confinement is the fall below that plateau — worth 27 %
+in a tight tub**. The bottle's own plume builds a warm stratified layer that
+descends past it, so within a few minutes its upper half is sitting in water it
+warmed itself.
+
+The offset between that plateau and the correlation's 520 W/m²K is a separate
+thing, and it is the solver's own limit rather than physics: at Ra ≈ 7 × 10⁸
+the real boundary layer is transitional and three-dimensional, which a 2-D
+simulation cannot reproduce. Add a current and the same solver matches the
+mixed-convection correlation to 1 %. Both branches of the solver are accurate
+where their benchmarks say they are and degrade once the real flow goes 3-D,
+which is why every headline number above comes from the correlations rather
+than from the CFD. Full accounting in [docs/validation.md](docs/validation.md).
 
 **The head-to-head**, identical bottle and mesh, differing only in boundary
 condition:

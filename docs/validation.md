@@ -136,8 +136,8 @@ finest grids is ±8.
 
 The defensible reading is that the 2.0 mm grid is under-resolved, and that on
 1.5 mm and finer the answer is **h = 435 ± 10 W/m²K** — about 16 % below the
-Churchill–Chu correlation's 520 W/m²K for the same conditions. That gap is not
-numerical error; §6 shows it is confinement.
+Churchill–Chu correlation's 520 W/m²K for the same conditions. §6 and §7 take
+that gap apart.
 
 Max ∇·u stays at 10⁻¹⁵ throughout.
 
@@ -180,10 +180,39 @@ this solver** — and why the CFD's job in the forced-convection branch is to
 confirm the correlation where a 2-D simulation is trustworthy, which it does to
 1 % at 0.01 m/s.
 
-The first row is the useful contrast. The *same solver*, in a channel with no
-current, gives 441 — well above the 323–445 range the box gives, and the box's
-own value falls as the box tightens. So the shortfall against the correlation
-is confinement, not the discretisation.
+The first row is the useful contrast, and it says something I initially got
+wrong. The *same solver*, in an open channel with **no** current, gives 441 —
+essentially identical to the 444–445 the large boxes give in §7. So the
+plateau value is not a confinement effect: it is what this solver returns for
+buoyancy-driven transfer off this bottle, box or no box.
+
+Adding just 0.01 m/s then moves the CFD by 19 % (441 → 524) while moving the
+correlation by 1.5 % (520 → 528), and the two land on top of each other. In
+other words the *forced* branch is accurate and the *free* branch is about
+15 % low.
+
+That is consistent with the rest of the suite rather than at odds with it. The
+buoyancy solver was validated against de Vahl Davis to 0.73 %, but only up to
+Ra = 10⁶. The bottle in still water sits at **Ra ≈ 7 × 10⁸** — three decades
+higher, right at the laminar-to-turbulent transition for a vertical surface,
+where the real boundary layer becomes three-dimensional. A two-dimensional
+simulation cannot produce those structures, and Churchill–Chu is fitted to
+experiments that contain them. It is the same class of limitation that shows up
+in the creek sweep once Re passes a few thousand, on the other branch.
+
+So the two branches fail in the same way for the same reason, and both failures
+are bounded and identified:
+
+| | validated to | fails when |
+|---|---|---|
+| buoyancy | 0.73 % at Ra ≤ 10⁶ | Ra ≳ 10⁸, flow goes 3-D |
+| forced | 2 % at Re ≤ 200 (and 1 % against the mixed correlation at Re = 540) | Re ≳ 3,000, wake goes 3-D |
+
+**This is the reason every headline number in the study comes from the
+correlations rather than from the CFD.** The CFD's job is the part correlations
+cannot do — confinement, stratification, and the head-to-head with everything
+else held identical — and it is used only where its own benchmarks say it can
+be trusted.
 
 ## 7. A cross-check the correlations cannot give
 
@@ -207,12 +236,15 @@ largest box than the smallest, and the stratification falls from 8 K to 2 K.
 
 The film coefficient plateaus cleanly at **445 W/m²K** once the side gap
 exceeds about one bottle diameter — the 26 cm and 40 cm boxes agree to within
-0.4 % — and collapses to 323 W/m²K when the gap closes to a third of a
-diameter. So confinement alone costs 27 % in a tight tub. The remaining 14 %
-between the plateau and the correlation's 520 W/m²K is the first-order
-wall-flux estimate discussed in §4, plus the fact that even a 40 cm box is not
-an infinite medium.
-The practical conclusion is unchanged either way, and is in fact strengthened:
-the still box is *worse* than its textbook correlation suggests, so the
-correlation-based comparison in the main study is conservative about the
-creek's advantage rather than flattering to it.
+0.4 %, and an open channel with no current gives 441 — and collapses to
+**323 W/m²K** when the gap closes to a third of a diameter.
+
+So the confinement effect is the *fall below the plateau*, and it is worth
+**27 %** in a tight tub. The offset between the plateau and the correlation is
+a separate matter and is diagnosed in §6: it is the solver's own 2-D limit at
+Ra ≈ 10⁹, not confinement.
+
+Both point the same way for the study's conclusion. A real box is tighter than
+an infinite medium and its own correlation therefore flatters it, so the
+correlation-based comparison in the main study is *conservative* about the
+creek's advantage rather than exaggerating it.
