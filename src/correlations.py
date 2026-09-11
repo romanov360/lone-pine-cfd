@@ -18,7 +18,7 @@ import math
 
 import ht
 
-from props import Fluid, Gr_density, film
+from props import Fluid, Gr_density, Gr_from_densities, film
 
 
 # ---------------------------------------------------------------------------
@@ -45,7 +45,8 @@ def _conduction_floor(k: float, L: float, D: float | None) -> float:
 
 
 def h_free_vertical(L: float, T_s: float, T_inf: float,
-                    D: float | None = None, fl: Fluid | None = None) -> float:
+                    D: float | None = None, fl: Fluid | None = None,
+                    rho_pair: tuple[float, float] | None = None) -> float:
     """
     Free convection from a vertical cylinder of height L (and diameter D).
 
@@ -57,7 +58,11 @@ def h_free_vertical(L: float, T_s: float, T_inf: float,
     floor = _conduction_floor(f.k, L, D)
     if abs(T_s - T_inf) < 1e-9:
         return floor
-    Gr = Gr_density(T_s, T_inf, L, fl=f)
+    # `rho_pair` is (rho at the bulk temperature, rho at the surface
+    # temperature) for whatever the bath actually is. Without it the bath is
+    # assumed to be water.
+    Gr = (Gr_from_densities(rho_pair[0], rho_pair[1], f, L)
+          if rho_pair is not None else Gr_density(T_s, T_inf, L, fl=f))
     if Gr <= 0.0 or not math.isfinite(Gr):
         return floor
     if D is None:
@@ -69,13 +74,15 @@ def h_free_vertical(L: float, T_s: float, T_inf: float,
 
 
 def h_free_horizontal(D: float, T_s: float, T_inf: float,
-                      fl: Fluid | None = None) -> float:
+                      fl: Fluid | None = None,
+                      rho_pair: tuple[float, float] | None = None) -> float:
     """Free convection from a horizontal cylinder (bottle lying down)."""
     f = fl or film(T_s, T_inf)
     floor = _conduction_floor(f.k, D, D)
     if abs(T_s - T_inf) < 1e-9:
         return floor
-    Gr = Gr_density(T_s, T_inf, D, fl=f)
+    Gr = (Gr_from_densities(rho_pair[0], rho_pair[1], f, D)
+          if rho_pair is not None else Gr_density(T_s, T_inf, D, fl=f))
     if Gr <= 0.0 or not math.isfinite(Gr):
         return floor
     Nu = ht.Nu_horizontal_cylinder_Churchill_Chu(f.Pr, Gr)
@@ -140,7 +147,8 @@ def h_external(D: float, L: float, U: float, T_s: float, T_inf: float,
                orientation: str = "vertical",
                method: str = "Churchill-Bernstein",
                fl: Fluid | None = None,
-               n: float = 4.0) -> float:
+               n: float = 4.0,
+               rho_pair: tuple[float, float] | None = None) -> float:
     """
     The external film coefficient for either setup.
 
@@ -149,9 +157,9 @@ def h_external(D: float, L: float, U: float, T_s: float, T_inf: float,
     """
     f = fl or film(T_s, T_inf)
     if orientation == "vertical":
-        hf = h_free_vertical(L, T_s, T_inf, D=D, fl=f)
+        hf = h_free_vertical(L, T_s, T_inf, D=D, fl=f, rho_pair=rho_pair)
     else:
-        hf = h_free_horizontal(D, T_s, T_inf, fl=f)
+        hf = h_free_horizontal(D, T_s, T_inf, fl=f, rho_pair=rho_pair)
     hc = h_forced_crossflow(D, U, T_s, T_inf, method=method, fl=f)
     return h_mixed(hc, hf, n=n)
 

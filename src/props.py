@@ -98,6 +98,17 @@ def film(T_surface_C: float, T_bulk_C: float) -> Fluid:
     return water(0.5 * (T_surface_C + T_bulk_C))
 
 
+def Gr_from_densities(rho_bulk: float, rho_surface: float, fl: "Fluid",
+                      L: float, g: float = 9.80665) -> float:
+    """
+    Grashof number from an explicit pair of densities.
+
+    The general form behind Gr_density, so a bath that is not pure water --
+    brine, say -- can supply its own density pair.
+    """
+    return g * abs(rho_bulk - rho_surface) / fl.rho * L**3 / fl.nu**2
+
+
 def Gr_density(T_surface_C: float, T_bulk_C: float, L: float,
                g: float = 9.80665, fl: "Fluid | None" = None) -> float:
     """
@@ -252,6 +263,91 @@ def bubbly_mixture(T_C: float, void_fraction: float, P: float = P_ATM) -> Fluid:
     # drives natural convection; bubbles add a separate, much stronger
     # buoyancy source handled in the CFD, not here.
     return Fluid(T=liq.T, rho=rho, cp=cp, k=k, mu=mu, beta=liq.beta)
+
+
+# ---------------------------------------------------------------------------
+# Brines -- baths that stay liquid below 0 C
+# ---------------------------------------------------------------------------
+
+
+# Ice liquidus of the water-NaCl system: mass percent NaCl against the
+# temperature at which ice first forms. Tabulated rather than fitted -- a
+# cubic through the dilute end missed the eutectic by 4 K, and the eutectic is
+# the whole point of a salt-ice bath.
+_NACL_LIQUIDUS = (
+    (0.0, 0.0), (2.0, -1.13), (4.0, -2.35), (6.0, -3.63), (8.0, -4.97),
+    (10.0, -6.56), (12.0, -8.18), (14.0, -10.0), (16.0, -11.9),
+    (18.0, -14.0), (20.0, -16.5), (22.0, -19.2), (23.3, -21.1),
+)
+
+
+def nacl_freezing_point(w: float) -> float:
+    """
+    Temperature at which ice first forms in aqueous NaCl, degrees C, for mass
+    fraction `w`. Linear interpolation of the tabulated ice liquidus.
+
+    Clamped at the eutectic (23.3 wt%, -21.1 C). Past that the solid that
+    forms is the salt dihydrate rather than ice and the liquidus turns back
+    upward, so more salt buys nothing -- which is exactly why a salt-ice bath
+    bottoms out around -21 C however much salt is thrown at it.
+    """
+    x = min(max(w, 0.0), 0.233) * 100.0
+    xs = [p[0] for p in _NACL_LIQUIDUS]
+    ts = [p[1] for p in _NACL_LIQUIDUS]
+    for i in range(len(xs) - 1):
+        if xs[i] <= x <= xs[i + 1]:
+            f = (x - xs[i]) / (xs[i + 1] - xs[i])
+            return ts[i] + f * (ts[i + 1] - ts[i])
+    return ts[-1]
+
+
+NACL_EUTECTIC_W = 0.233
+NACL_EUTECTIC_T = -21.1
+
+
+def brine_nacl(T_C: float, w: float = 0.23, P: float = P_ATM) -> Fluid:
+    """
+    Aqueous NaCl brine properties from CoolProp's incompressible solutions.
+
+    A salt-and-ice bath is the classic way to get a still container well below
+    0 C, so it is the natural candidate for "when does the box win". Note what
+    it costs: at 23 wt% the viscosity is five times water's and the
+    conductivity is 11 % lower, both of which work against the film
+    coefficient. The bath wins on temperature, not on transport.
+    """
+    T = T_C + 273.15
+    # CoolProp's NaCl solution is correlated to 23 wt%, which is essentially
+    # the eutectic (23.3 wt%); clamp rather than extrapolate.
+    w = min(max(w, 1e-4), 0.23)
+    fluid = f"INCOMP::MNA[{w:.4f}]"
+    rho = PropsSI("D", "T", T, "P", P, fluid)
+    # Expansion coefficient by central difference -- the incompressible
+    # backend does not expose it directly.
+    dT = 0.5
+    rho_hi = PropsSI("D", "T", T + dT, "P", P, fluid)
+    rho_lo = PropsSI("D", "T", T - dT, "P", P, fluid)
+    beta = -(rho_hi - rho_lo) / (2.0 * dT) / rho
+    return Fluid(
+        T=T, rho=rho,
+        cp=PropsSI("C", "T", T, "P", P, fluid),
+        k=PropsSI("L", "T", T, "P", P, fluid),
+        mu=PropsSI("V", "T", T, "P", P, fluid),
+        beta=beta,
+    )
+
+
+def brine_rho(T_C: float, w: float, P: float = P_ATM) -> float:
+    w = min(max(w, 1e-4), 0.23)
+    return PropsSI("D", "T", T_C + 273.15, "P", P, f"INCOMP::MNA[{w:.4f}]")
+
+
+# ---------------------------------------------------------------------------
+# Ice
+# ---------------------------------------------------------------------------
+
+ICE_K = 2.22          # W/m-K at 0 C
+ICE_RHO = 917.0       # kg/m^3
+ICE_LATENT = 333.5e3  # J/kg
 
 
 # ---------------------------------------------------------------------------
