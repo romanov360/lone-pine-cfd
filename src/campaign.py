@@ -152,6 +152,74 @@ def creek_study(Us=(0.0, 0.01, 0.02, 0.05, 0.10, 0.20), dx=1.2e-3,
 
 
 # ---------------------------------------------------------------------------
+# B2. Where to put the bottle, and what shape the box should be
+# ---------------------------------------------------------------------------
+
+
+def placement_study(offsets=(-0.30, -0.15, 0.0, 0.15, 0.30), dx=1.25e-3,
+                    t_end=180.0, W=0.24, H=0.34):
+    """
+    A still box stratifies: the bottle's own plume pools warm water at the top.
+    So height within the box should matter, and this measures how much.
+    """
+    print("B2. Bottle height within the box")
+    recs = []
+    for off in offsets:
+        c = CFDCase(f"offset {off:+.2f}", mode="box", dx=dx, box_W=W, box_H=H,
+                    y_offset=off, t_end=t_end, isothermal_bottle=True,
+                    T_bottle0=25.0, T_bath0=10.0, record_every=1.0, n_proj=1)
+        r = run(c, verbose=False)
+        tail = np.asarray(r["t"]) > 0.5 * t_end
+        s = summarise(r)
+        h_tail = np.asarray(r["h_eff"])[tail]
+        s["h_quasi_steady"] = float(np.nanmean(h_tail))
+        s["h_std"] = float(np.nanstd(h_tail))
+        s["y_offset"] = off
+        s["series"] = _series(r)
+        recs.append(s)
+        print(f"   offset {off:+5.2f} ({'low' if off < 0 else 'high' if off > 0 else 'centre':>6})  "
+              f"h={s['h_quasi_steady']:6.1f}+/-{s['h_std']:4.1f}  "
+              f"bath +{s['T_bath_final']-10:.2f} K  "
+              f"top-bottom {s['T_bath_top_final']-s['T_bath_bot_final']:+.2f} K  "
+              f"({s['wall_time_s']:.0f} s)", flush=True)
+    _save("placement", recs)
+    return recs
+
+
+def aspect_study(shapes=((0.14, 0.514), (0.19, 0.379), (0.24, 0.300),
+                         (0.31, 0.232), (0.40, 0.180)),
+                 dx=1.25e-3, t_end=180.0):
+    """
+    Box shape at (very nearly) constant volume. Tall and narrow gives the plume
+    a long chimney but squeezes the sides; short and wide does the reverse.
+    """
+    print("B3. Box shape at constant volume")
+    recs = []
+    for W, H in shapes:
+        c = CFDCase(f"box {W*100:.0f}x{H*100:.0f}", mode="box", dx=dx,
+                    box_W=W, box_H=H, t_end=t_end, isothermal_bottle=True,
+                    T_bottle0=25.0, T_bath0=10.0, record_every=1.0, n_proj=1)
+        r = run(c, verbose=False)
+        tail = np.asarray(r["t"]) > 0.5 * t_end
+        s = summarise(r)
+        h_tail = np.asarray(r["h_eff"])[tail]
+        s["h_quasi_steady"] = float(np.nanmean(h_tail))
+        s["h_std"] = float(np.nanstd(h_tail))
+        s["W"], s["H"] = W, H
+        s["area_m2"] = W * H
+        s["side_gap_D"] = (W - 0.070) / 2 / 0.070
+        s["head_room_H"] = (H - 0.16142) / 2 / 0.16142
+        s["series"] = _series(r)
+        recs.append(s)
+        print(f"   {W*100:4.0f} x {H*100:5.1f} cm (area {W*H*1e4:5.0f} cm2)  "
+              f"side gap {s['side_gap_D']:4.2f}D  head room {s['head_room_H']:4.2f}H  "
+              f"h={s['h_quasi_steady']:6.1f}+/-{s['h_std']:4.1f}  "
+              f"({s['wall_time_s']:.0f} s)", flush=True)
+    _save("aspect", recs)
+    return recs
+
+
+# ---------------------------------------------------------------------------
 # D. The head-to-head transient
 # ---------------------------------------------------------------------------
 
@@ -219,7 +287,8 @@ if __name__ == "__main__":
     what = sys.argv[1]
     t0 = time.time()
     fns = {"grid": grid_study, "boxsize": box_size_study, "creek": creek_study,
-           "h2h": head_to_head}
+           "h2h": head_to_head, "placement": placement_study,
+           "aspect": aspect_study}
     if what == "h2h" and len(sys.argv) > 2:
         # e.g.  python3 src/campaign.py h2h creek
         head_to_head(only=sys.argv[2])

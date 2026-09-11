@@ -53,6 +53,9 @@ class CFDCase:
     dx: float = 1.0e-3                # m
     box_W: float = 0.24               # m, box width  (box mode)
     box_H: float = 0.26               # m, box height (box mode)
+    y_offset: float = 0.0             # bottle centre height as a fraction of
+                                      # the box height away from mid-depth;
+                                      # -0.3 sits it low, +0.3 high
     up_D: float = 4.0                 # upstream length in bottle diameters
     down_D: float = 12.0              # downstream length
     half_H: float = 0.13              # half channel height above/below bottle
@@ -81,7 +84,11 @@ class CFDCase:
         if self.mode == "box":
             Lx, Ly = self.box_W, self.box_H
             nx, ny = int(round(Lx / dx)), int(round(Ly / dx))
-            xc, yc = Lx / 2.0, Ly / 2.0
+            xc, yc = Lx / 2.0, Ly / 2.0 + self.y_offset * Ly
+            # Keep the bottle inside the box with at least one cell of water
+            # above and below it.
+            half_h = B.H_outer / 2.0
+            yc = min(max(yc, half_h + 2 * dx), Ly - half_h - 2 * dx)
             bc = BC(left="wall", right="wall", top="wall", bottom="wall")
         else:
             Lx = (self.up_D + self.down_D) * B.D_outer
