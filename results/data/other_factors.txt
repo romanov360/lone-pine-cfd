@@ -1,0 +1,87 @@
+==============================================================================
+OTHER FACTORS: everything that is not the water outside the bottle
+==============================================================================
+
+==============================================================================
+1. Internal circulation -- the biggest lever in the problem
+==============================================================================
+     k_eff  h_inside  U overall  inside share    gain
+         1        38         28           85%   1.00x
+         2        76         49           74%   1.74x
+         7       265        104           45%   3.69x
+        15       569        137           28%   4.86x
+        30      1137        159           16%   5.63x
+       100      3791        178            5%   6.34x
+
+  The free-convection correlation used in the main study gives
+  h_inside = 273 W/m2-K for a sealed bottle standing still, which
+  is k_eff near 7 -- the row marked above. Perfectly stirred is the
+  last row. The difference between them is 1.72x on the
+  overall conductance, against the 1.35x that the fastest imaginable
+  current buys on the outside film.
+
+  So the creek has a SECOND advantage the main study never counted:
+  it does not just flow past the bottle, it knocks it about. A bottle
+  wedged still in a creek gets only the film-coefficient gain; one
+  rolling along the bed gets this as well, and this is the bigger of
+  the two.
+
+==============================================================================
+2. How full the bottle is
+==============================================================================
+     fill    volume       UA   heat cap   time const  vs full
+     100%      500mL     4.39      2.08kJ/K        7.9min    1.00x
+      90%      450mL     3.67      1.88kJ/K        8.5min    0.93x
+      75%      375mL     3.12      1.56kJ/K        8.3min    0.95x
+      50%      250mL     2.22      1.04kJ/K        7.8min    1.01x
+      25%      125mL     1.31      0.52kJ/K        6.6min    1.19x
+
+  Fill level barely moves the time constant, and that is the
+  interesting part. Emptying the bottle halfway removes half the
+  water to be cooled -- but it also un-wets half the wall, and the
+  headspace behind it is nearly a perfect insulator. The two effects
+  very nearly cancel: half the heat, half the conductance, same
+  time constant. A part-full bottle reaches a given temperature
+  sooner only because it started with less heat in it, not because
+  it sheds heat any faster.
+
+==============================================================================
+3. What is in the bottle
+==============================================================================
+              contents        Pr         Ra  h_inside   time const  vs water
+                 water         5    1.1e+09       615        5.8min     1.00x
+     beer / soft drink         8    8.4e+08       541        5.8min     1.00x
+                  milk        13    5.4e+08       468        6.0min     1.04x
+             olive oil       464    3.2e+07        64        8.0min     1.39x
+            thick soup      1520    5.6e+06       114       11.8min     2.05x
+                 honey     23000    2.5e+05        49       18.2min     3.16x
+
+  Viscosity decides it. Water, beer and milk all convect freely
+  inside and behave alike. Oil, soup and honey do not convect at
+  all -- their Rayleigh numbers are too low -- so they cool by pure
+  conduction and take many times longer, whatever is going on
+  outside. For honey the creek-versus-box question is irrelevant.
+
+==============================================================================
+4. Do you need water at all?
+==============================================================================
+  Bottle at 25 C, air at 20 C, 50% RH (wet-bulb 13.8 C),
+  wrapped in a wet cloth:
+
+    wind m/s  sensible  evaporative   total h  vs still water
+         0.0       3.3         22.2      25.5           0.05x
+         1.0      13.0         88.9     102.0           0.22x
+         3.0      23.8        161.9     185.6           0.40x
+         8.0      42.1        287.0     329.1           0.71x
+
+  Evaporation carries most of the load -- six or seven times the
+  sensible transfer at every wind speed. But even an 8 m/s gale
+  reaches only 329 W/m2-K, still 1.4x short of a bucket of
+  STILL water and 5x short of a 0.35 m/s creek. Water beats air
+  because it is eight hundred times denser, and no amount of latent
+  heat closes that gap.
+
+  The wet cloth also cannot go below the wet-bulb temperature
+  (13.8 C here), which is above a 10 C creek to begin with. It
+  is a good trick in a hot dry place with no water to spare, and a
+  poor one anywhere you could simply put the bottle in a stream.
