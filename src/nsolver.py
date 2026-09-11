@@ -199,13 +199,13 @@ class Solver:
             u[0, :] = 0.0
         if bc.right == "outflow":
             u[-1, :] = u[-2, :]
-            # Enforce global mass conservation on the outflow plane.
-            q_in = u[0, :].sum()
-            q_out = u[-1, :].sum()
-            if q_out != 0.0:
-                u[-1, :] *= q_in / q_out
-            else:
-                u[-1, :] = q_in / u.shape[1]
+            # Global mass correction, applied ADDITIVELY. A multiplicative
+            # rescale (u *= q_in/q_out) looks equivalent and is not: when the
+            # buoyant plume drives recirculation across the outlet plane the
+            # net flux there passes through zero, the factor blows up, and the
+            # scheme survives only by collapsing its own time step. The
+            # additive shift is bounded however the profile is shaped.
+            u[-1, :] += (u[0, :].sum() - u[-1, :].sum()) / u.shape[1]
         else:
             u[-1, :] = 0.0
         v[:, 0] = 0.0
@@ -377,8 +377,7 @@ class Solver:
             us[0, :] = 0.0
         if self.bc.right == "outflow":
             us[-1, :] = us[-2, :]
-            q_in, q_out = us[0, :].sum(), us[-1, :].sum()
-            us[-1, :] = us[-1, :] * (q_in / q_out) if q_out != 0 else q_in / d.ny
+            us[-1, :] += (us[0, :].sum() - us[-1, :].sum()) / d.ny
         else:
             us[-1, :] = 0.0
         vs[:, 0] = 0.0

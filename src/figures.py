@@ -468,37 +468,55 @@ def fig_fields():
     files = sorted(glob.glob("results/data/field_*.npz"))
     if not files:
         return None
-    fig, axes = plt.subplots(1, len(files), figsize=(5.6 * len(files), 5.4))
-    if len(files) == 1:
-        axes = [axes]
-    for ax, f in zip(np.atleast_1d(axes), files):
+    panels = []
+    for f in files:
         d = np.load(f)
-        T = d["T"]; dx = float(d["dx"]); outer = d["outer"]
+        name = f.split("field_")[1].replace(".npz", "").replace("_", " ")
+        for t in (20, 120, 300):
+            key = f"snapT_{t}"
+            if key in d:
+                panels.append((name, t, d[key], d["outer"], float(d["dx"])))
+        panels.append((name, None, d["T"], d["outer"], float(d["dx"])))
+
+    n = len(panels)
+    ncol = min(4, n)
+    nrow = int(np.ceil(n / ncol))
+    fig, axes = plt.subplots(nrow, ncol, figsize=(3.2 * ncol, 4.6 * nrow),
+                             squeeze=False)
+    vmin, vmax = 10.0, 15.5
+    im = None
+    for ax, (name, t, T, outer, dx) in zip(axes.ravel(), panels):
         nx, ny = T.shape
         Tm = np.ma.masked_where(outer, T)
         im = ax.imshow(Tm.T, origin="lower", cmap="RdYlBu_r",
                        extent=[0, nx * dx * 100, 0, ny * dx * 100],
-                       vmin=10, vmax=22, interpolation="bilinear")
+                       vmin=vmin, vmax=vmax, interpolation="bilinear")
         ax.contour(np.linspace(0, nx * dx * 100, nx),
                    np.linspace(0, ny * dx * 100, ny), Tm.T,
-                   levels=np.arange(10.2, 22, 0.6), colors="k",
-                   linewidths=0.28, alpha=0.35)
-        ys, xs = np.where(outer)
+                   levels=np.arange(10.15, vmax, 0.35), colors="k",
+                   linewidths=0.25, alpha=0.3)
+        xs, ys = np.where(outer)
         ax.add_patch(plt.Rectangle(
             (xs.min() * dx * 100, ys.min() * dx * 100),
             (xs.max() - xs.min() + 1) * dx * 100,
             (ys.max() - ys.min() + 1) * dx * 100,
-            fc="#d9d8d3", ec=INK, lw=1.2, zorder=5))
-        name = f.split("field_")[1].replace(".npz", "").replace("_", " ")
-        ax.set_title(name)
-        ax.set_xlabel("cm"); ax.set_ylabel("cm")
+            fc="#cfcec9", ec=INK, lw=1.0, zorder=5))
+        ax.set_title(f"{name}, t = {t} s" if t else f"{name}, final",
+                     fontsize=9.5)
+        ax.set_xlabel("cm", fontsize=8); ax.set_ylabel("cm", fontsize=8)
+        ax.tick_params(labelsize=7.5)
         ax.grid(False)
         for sp in ax.spines.values():
             sp.set_visible(False)
-        cb = fig.colorbar(im, ax=ax, pad=0.02, shrink=0.85)
-        cb.set_label("$^\circ$C", color=INK2)
+    for ax in axes.ravel()[n:]:
+        ax.set_visible(False)
+    if im is not None:
+        cb = fig.colorbar(im, ax=axes.ravel().tolist(), pad=0.015, shrink=0.7,
+                          aspect=30)
+        cb.set_label("water temperature ($^\\circ$C)", color=INK2)
         cb.outline.set_visible(False)
-    fig.subplots_adjust(wspace=0.25)
+    fig.suptitle("The bottle's own plume warms the water it is sitting in",
+                 x=0.02, ha="left", fontsize=12, fontweight="600", color=INK)
     return save(fig, "09_fields")
 
 
