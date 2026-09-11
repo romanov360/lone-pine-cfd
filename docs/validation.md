@@ -76,10 +76,13 @@ thinner than its momentum layer by roughly Pr^(1/3) ≈ 1.9 and needs a finer
 mesh for the same accuracy. A refinement sequence at Re = 40 shows the error
 shrinking as it should:
 
-| D/Δx | cells across the thermal layer | Nu | error vs correlation |
-|---|---|---|---|
-| 16 | ~2 | 8.72 | +15.2 % |
-| 24 | ~3 | 8.24 | +8.9 % |
+| D/Δx | Nu | error vs correlation |
+|---|---|---|
+| 16 | 8.72 | +15.2 % |
+| 24 | 8.24 | +8.9 % |
+| 36 | 7.96 | +5.1 % |
+
+Monotone, and roughly halving for each 1.5× refinement.
 
 This is the practical reason the study's water-side forced-convection numbers
 come from correlations rather than from the CFD: getting Pr = 7 cross-flow to
@@ -148,7 +151,30 @@ Max ∇·u stays at 10⁻¹⁵ throughout.
 > that scaled with how much heat was being drawn off. The solver now pins the
 > body's temperature explicitly, which is what an isothermal boundary is.
 
-## 6. A cross-check the correlations cannot give
+## 6. The creek case, against the correlation it will be compared with
+
+The box results in §7 only mean something if the same solver reproduces the
+correlation where the correlation is trustworthy. Run in an open channel
+instead of a closed box, with the bottle held isothermal:
+
+| setting | h from CFD | mixed-convection correlation | ratio |
+|---|---|---|---|
+| closed channel, no current | 441 ± 27 | 520 | 0.85 |
+| creek at 0.01 m/s | 524 ± 16 | 528 | **0.99** |
+| creek at 0.02 m/s | 577 ± 26 | 552 | 1.05 |
+| creek at 0.05 m/s | 771 ± 60 | 672 | 1.15 |
+
+At 0.01 m/s the agreement is within 1 %. It widens with velocity, which is
+expected and is the reason the study's fast-creek numbers come from
+correlations: a two-dimensional simulation cannot represent a
+three-dimensional wake, and by 0.05 m/s that is starting to tell.
+
+The first row is the useful contrast. The *same solver*, in a channel with no
+current, gives 441 — well above the 323–445 range the box gives, and the box's
+own value falls as the box tightens. So the shortfall against the correlation
+is confinement, not the discretisation.
+
+## 7. A cross-check the correlations cannot give
 
 The box-size sweep is not a validation case — there is no reference answer —
 but it explains the 20 % gap above and so belongs here:
