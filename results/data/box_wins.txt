@@ -22,7 +22,37 @@ looking for the exceptions.
   needs a different advantage than the flow field. It has five.
 
 ==============================================================================
-2. LEVER 1+2: temperature and reservoir -- the cold-bath ladder
+2. How cold does a still bath have to be to match a creek?
+==============================================================================
+  The exchange rate between temperature and current. Creek at 10 C.
+
+    creek U  target  creek time   still bath needs  colder by
+       0.05     25C       4.4 m              6.4 C      3.6 K
+       0.05     20C       7.3 m              6.8 C      3.2 K
+       0.05     15C      12.7 m              7.6 C      2.4 K
+       0.20     25C       3.9 m              0.8 C      9.2 K
+       0.20     20C       6.4 m              3.2 C      6.8 K
+       0.20     15C      11.1 m              5.6 C      4.4 K
+       0.35     25C       3.7 m             -0.4 C     10.4 K
+       0.35     20C       6.1 m              1.5 C      8.5 K
+       0.35     15C      10.7 m              4.9 C      5.1 K
+       1.00     25C       3.5 m             -1.1 C     11.1 K
+       1.00     20C       5.8 m             -0.4 C     10.4 K
+       1.00     15C      10.2 m              4.0 C      6.0 K
+       2.50     25C       3.4 m             -1.5 C     11.5 K
+       2.50     20C       5.7 m             -0.7 C     10.7 K
+       2.50     15C      10.0 m              3.2 C      6.8 K
+
+  Two to eleven kelvin, depending on how fast the creek runs and
+  how far you are cooling. Swapping tap water for fridge water --
+  10 C to 4 C, six kelvin -- is worth about as much as finding a
+  brisk creek. Note the trend REVERSES with target: the deeper you
+  cool, the less temperature advantage the box needs, because the
+  last few degrees are governed by the bath temperature itself
+  rather than by how fast heat crosses the film.
+
+==============================================================================
+3. LEVER 1+2: temperature and reservoir -- the cold-bath ladder
 ==============================================================================
 bath                                 ->25C   ->20C   ->15C   ->10C    ->5C    ->1C
 ----------------------------------------------------------------------------------
@@ -50,7 +80,7 @@ Salt-ice bath, 23 wt% (-20.5 C)      1.9 m   2.8 m   3.8 m   5.3 m   7.7 m   9.7
     Salt-ice bath, 23 wt% (-20.5 C)       6.40 h
 
 ==============================================================================
-3. LEVER 3: the creek the bottle actually feels
+4. LEVER 3: the creek the bottle actually feels
 ==============================================================================
   Nominal creek 0.35 m/s; still 20 L box reaches 15 C in  16.6 m
 
@@ -75,7 +105,7 @@ Salt-ice bath, 23 wt% (-20.5 C)      1.9 m   2.8 m   3.8 m   5.3 m   7.7 m   9.7
       1.00     0.50      56%    0.278
 
 ==============================================================================
-4. LEVER 4: a current that opposes the plume
+5. LEVER 4: a current that opposes the plume
 ==============================================================================
   A bottle in a downwelling -- the throat of a plunge pool, say --
   meets water moving DOWN past a plume trying to rise.
@@ -95,7 +125,7 @@ Salt-ice bath, 23 wt% (-20.5 C)      1.9 m   2.8 m   3.8 m   5.3 m   7.7 m   9.7
   configuration in the whole study where a current is a liability.
 
 ==============================================================================
-5. LEVER 5: scale and drive
+6. LEVER 5: scale and drive
 ==============================================================================
   Bigger bottle -- h_free barely changes, h_forced falls as D^-1/2:
     litres   D (mm)   h_free  h_forced  h_mixed  creek gain
@@ -116,7 +146,7 @@ Salt-ice bath, 23 wt% (-20.5 C)      1.9 m   2.8 m   3.8 m   5.3 m   7.7 m   9.7
           95     48.2      877     1932       2.20x
 
 ==============================================================================
-6. Time horizon: the gap is not constant
+7. Time horizon: the gap is not constant
 ==============================================================================
      elapsed   box 20 L    creek     gap
       30.0 s     37.86C   37.17C   0.70K
@@ -132,7 +162,7 @@ Salt-ice bath, 23 wt% (-20.5 C)      1.9 m   2.8 m   3.8 m   5.3 m   7.7 m   9.7
   which is the finite-bath effect reasserting itself.
 
 ==============================================================================
-7. The verdict
+8. The verdict
 ==============================================================================
   The box wins whenever you use the one thing it has that a creek
   does not: you choose its contents.

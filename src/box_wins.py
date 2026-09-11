@@ -68,35 +68,64 @@ def t_to(target, **kw) -> float:
 
 
 def temperature_crossover(targets=(25.0, 20.0, 15.0),
-                          Us=(0.05, 0.2, 0.35, 1.0), T_creek=10.0):
+                          Us=(0.05, 0.2, 0.35, 1.0, 2.5), T_creek=10.0,
+                          T_box_grid=None):
     """
-    For a creek at T_creek running at U, find the still-box temperature that
-    matches it on time-to-target. Colder than that and the box wins.
+    For a creek at `T_creek` running at U, how cold does a STILL bath have to
+    be to match it?
+
+    Rather than root-finding per case -- which would run the transient model a
+    hundred-odd times -- the box curve t(T_box) is computed once on a grid and
+    inverted by interpolation. It is monotone in T_box, so that is exact to
+    the resolution of the grid.
     """
+    if T_box_grid is None:
+        T_box_grid = [9.5, 8.0, 6.0, 4.0, 2.0, 0.0, -3.1, -6.6, -10.9, -16.5,
+                      -20.5]
+
+    # Box curve: time to each target as a function of bath temperature.
+    box_times = {T: [] for T in targets}
+    for T_box in T_box_grid:
+        kw = dict(U=0.0, bath_volume=None, T_bath_0=T_box)
+        if T_box < 0:
+            # Below freezing the bath has to be brine to still be a liquid;
+            # pick the concentration whose liquidus sits at this temperature.
+            w = _brine_w_for(T_box)
+            kw.update(bath_kind="brine", brine_w=w)
+        sc = Scenario("", **kw)
+        res = simulate(sc, t_end=4 * 3600, stop_at=0.4 if T_box < 0 else None)
+        for T in targets:
+            box_times[T].append(time_to(res, T))
+
     rows = []
     for U in Us:
-        for target in targets:
-            t_creek = t_to(target, U=U, bath_volume=None, T_bath_0=T_creek)
-            if not np.isfinite(t_creek):
-                rows.append({"U": U, "target": target, "T_box": None,
-                             "t_creek": None})
-                continue
-
-            def resid(T_box):
-                t_box = t_to(target, U=0.0, bath_volume=None, T_bath_0=T_box)
-                if not np.isfinite(t_box):
-                    return 1e4
-                return t_box - t_creek
-
-            try:
-                T_box = brentq(resid, -1.0, T_creek - 0.01, xtol=1e-3)
-            except ValueError:
-                T_box = None
-            rows.append({"U": U, "target": target, "T_box": T_box,
-                         "t_creek": t_creek,
-                         "advantage_K": None if T_box is None
-                         else T_creek - T_box})
+        for T in targets:
+            t_creek = t_to(T, U=U, bath_volume=None, T_bath_0=T_creek)
+            xs, ys = [], []
+            for T_box, t_box in zip(T_box_grid, box_times[T]):
+                if np.isfinite(t_box):
+                    xs.append(t_box)
+                    ys.append(T_box)
+            # t_box decreases as T_box decreases, so reverse for interpolation.
+            order = np.argsort(xs)
+            xs = np.asarray(xs)[order]
+            ys = np.asarray(ys)[order]
+            if not np.isfinite(t_creek) or t_creek < xs[0] or t_creek > xs[-1]:
+                T_match = None
+            else:
+                T_match = float(np.interp(t_creek, xs, ys))
+            rows.append({"U": U, "target": T, "t_creek": t_creek,
+                         "T_box_match": T_match,
+                         "advantage_K": None if T_match is None
+                         else T_creek - T_match})
     return rows
+
+
+def _brine_w_for(T_C: float) -> float:
+    """NaCl mass fraction whose ice liquidus sits at T_C."""
+    ws = np.linspace(0.0, 0.23, 200)
+    ts = np.array([nacl_freezing_point(w) for w in ws])
+    return float(np.interp(-T_C, -ts, ws))
 
 
 # ---------------------------------------------------------------------------
@@ -283,7 +312,24 @@ def main():
     print("\n  The blend can never fall below the still-water limit, so the box")
     print("  needs a different advantage than the flow field. It has five.")
 
-    head(2, "LEVER 1+2: temperature and reservoir -- the cold-bath ladder")
+    head(2, "How cold does a still bath have to be to match a creek?")
+    print("  The exchange rate between temperature and current. Creek at 10 C.\n")
+    print(f"  {'creek U':>9}{'target':>8}{'creek time':>12}"
+          f"{'still bath needs':>19}{'colder by':>11}")
+    for r in temperature_crossover():
+        tb = "unreachable" if r["T_box_match"] is None else f"{r['T_box_match']:.1f} C"
+        adv = "" if r["advantage_K"] is None else f"{r['advantage_K']:.1f} K"
+        print(f"  {r['U']:9.2f}{r['target']:7.0f}C{fmt(r['t_creek']):>12}"
+              f"{tb:>19}{adv:>11}")
+    print("\n  Two to eleven kelvin, depending on how fast the creek runs and")
+    print("  how far you are cooling. Swapping tap water for fridge water --")
+    print("  10 C to 4 C, six kelvin -- is worth about as much as finding a")
+    print("  brisk creek. Note the trend REVERSES with target: the deeper you")
+    print("  cool, the less temperature advantage the box needs, because the")
+    print("  last few degrees are governed by the bath temperature itself")
+    print("  rather than by how fast heat crosses the film.")
+
+    head(3, "LEVER 1+2: temperature and reservoir -- the cold-bath ladder")
     rows = cold_bath_ladder()
     print(f"{'bath':34s}{'->25C':>8}{'->20C':>8}{'->15C':>8}{'->10C':>8}"
           f"{'->5C':>8}{'->1C':>8}")
@@ -300,7 +346,7 @@ def main():
         if np.isfinite(r["freeze_through"]):
             print(f"    {r['name']:34s}{fmt(r['freeze_through']):>10}")
 
-    head(3, "LEVER 3: the creek the bottle actually feels")
+    head(4, "LEVER 3: the creek the bottle actually feels")
     sh, t_box = shelter_sweep()
     print(f"  Nominal creek 0.35 m/s; still 20 L box reaches 15 C in "
           f"{fmt(t_box)}\n")
@@ -318,7 +364,7 @@ def main():
         f = bed_shelter_factor(0.5 * B.D_outer, depth, Um)
         print(f"  {depth:8.2f}{Um:9.2f}{f*100:8.0f}%{f*Um:9.3f}")
 
-    head(4, "LEVER 4: a current that opposes the plume")
+    head(5, "LEVER 4: a current that opposes the plume")
     print("  A bottle in a downwelling -- the throat of a plunge pool, say --")
     print("  meets water moving DOWN past a plume trying to rise.\n")
     print(f"  {'U (m/s)':>9}{'h_forced':>10}{'h_free':>9}{'assisting':>11}"
@@ -330,7 +376,7 @@ def main():
     print("  water transfers LESS heat than still water. This is the only")
     print("  configuration in the whole study where a current is a liability.")
 
-    head(5, "LEVER 5: scale and drive")
+    head(6, "LEVER 5: scale and drive")
     print("  Bigger bottle -- h_free barely changes, h_forced falls as D^-1/2:")
     print(f"  {'litres':>8}{'D (mm)':>9}{'h_free':>9}{'h_forced':>10}"
           f"{'h_mixed':>9}{'creek gain':>12}")
@@ -344,7 +390,7 @@ def main():
         print(f"  {r['T_bottle']:10.0f}{r['T_surface']:9.1f}{r['h_free']:9.0f}"
               f"{r['h_mixed']:9.0f}{r['ratio']:11.2f}x")
 
-    head(6, "Time horizon: the gap is not constant")
+    head(7, "Time horizon: the gap is not constant")
     print(f"  {'elapsed':>10}{'box 20 L':>11}{'creek':>9}{'gap':>8}")
     for r in time_horizon():
         print(f"  {fmt(r['t']):>10}{r['T_box']:10.2f}C{r['T_creek']:8.2f}C"
@@ -353,7 +399,7 @@ def main():
     print("  both approach their limits -- but they approach DIFFERENT limits,")
     print("  which is the finite-bath effect reasserting itself.")
 
-    head(7, "The verdict")
+    head(8, "The verdict")
     print("""  The box wins whenever you use the one thing it has that a creek
   does not: you choose its contents.
 
