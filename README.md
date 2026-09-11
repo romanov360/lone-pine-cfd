@@ -132,7 +132,37 @@ equation. It is verified and validated before use:
 | Poisson operator | manufactured solution | 2.00 order, both BC types |
 | Lid-driven cavity, Re = 100/400/1000 | Ghia et al. (1982) | RMS error 0.0023 / 0.0012 / 0.0031 |
 | Heated cavity, Ra = 10³…10⁶ | de Vahl Davis (1983) | Nu within +0.07 % … +0.73 % |
-| Cylinder cross-flow | Churchill–Bernstein, Williamson | see docs/validation.md |
+| Cylinder, Re = 40/100/200 | Churchill–Bernstein (1977) | Nu within +2.0 / −0.5 / −1.8 % |
+| Cylinder wake, Re = 40 | Coutanceau & Bouard (1977) | L/D = 2.02 vs 2.2 |
+
+## What the CFD adds that correlations cannot
+
+Textbook free-convection correlations assume a body suspended in an infinite
+quiescent medium. A box is not one:
+
+| box | side gap | h from CFD | vs correlation | bath warmed | top − bottom |
+|---|---|---|---|---|---|
+| 12 × 20 cm | 0.36 D | 323 ± 45 | 62 % | +7.7 K | +9.9 K |
+| 18 × 26 cm | 0.79 D | 419 ± 9 | 81 % | +3.4 K | +7.2 K |
+| 26 × 34 cm | 1.36 D | 444 ± 11 | 85 % | +1.7 K | +4.0 K |
+| 40 × 46 cm | 2.36 D | 445 ± 10 | 86 % | +0.8 K | +2.1 K |
+
+Confinement alone costs 27 % in a tight tub. The bottle's own plume builds a
+warm stratified layer that descends past it, so within a few minutes its upper
+half is sitting in water it warmed itself. Run the same solver in an open
+channel instead and the mixed-convection correlation is reproduced to within
+1 % at 0.01 m/s — so the box discrepancy is physics, not a solver artefact.
+
+**The head-to-head**, identical bottle and mesh, differing only in boundary
+condition:
+
+| bottle core | 2 min | 4 min | 6 min | heat removed |
+|---|---|---|---|---|
+| Still box | 35.54 °C | 32.15 °C | 29.37 °C | 10.63 K |
+| Creek, 0.02 m/s | 34.13 °C | 29.53 °C | 25.81 °C | **14.19 K** |
+
+Two centimetres per second — barely a walking pace for water — removes a third
+more heat over six minutes than no current at all.
 
 ## Running it
 
