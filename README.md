@@ -146,6 +146,7 @@ equation. It is verified and validated before use:
 | Heated cavity, Ra = 10³…10⁶ | de Vahl Davis (1983) | Nu within +0.07 % … +0.73 % |
 | Cylinder, Re = 40/100/200 | Churchill–Bernstein (1977) | Nu within +2.0 / −0.5 / −1.8 % |
 | Cylinder wake, Re = 40 | Coutanceau & Bouard (1977) | L/D = 2.02 vs 2.2 |
+| Cylinder at Pr = 7, 4-grid refinement | Churchill–Bernstein | +15.2 → +3.2 %, p = 0.99, extrapolates to −2.6 % |
 
 ## What the CFD adds that correlations cannot
 
