@@ -170,9 +170,10 @@ def cylinder_flow(Re: float, D_cells: int = 40, Pr: float = 7.0,
     alpha = nu / Pr
     k = np.full((nx, ny), alpha)
     rho_cp = np.ones((nx, ny))
-    # Huge capacity + conductivity in the cylinder = isothermal surface.
-    k[solid] = alpha * 5e3
-    rho_cp[solid] = 1e6
+    # The cylinder is held at T = 1 every step (Solver.T_pin), which is what
+    # "isothermal cylinder" means. Its own k and rho*cp then only matter for
+    # the interface conductivity, so k is raised modestly.
+    k[solid] = alpha * 50.0
 
     mat = Materials(rho_cp=rho_cp, k=k, solid=solid, nu=nu, rho_f=1.0,
                     beta=0.0, T_ref=0.0, gravity=0.0)
@@ -180,7 +181,7 @@ def cylinder_flow(Re: float, D_cells: int = 40, Pr: float = 7.0,
             U_in=U, T_in=0.0)
     T0 = np.zeros((nx, ny))
     T0[solid] = 1.0
-    s = Solver(dom, mat, bc, T0, cfl=0.4)
+    s = Solver(dom, mat, bc, T0, cfl=0.4, T_pin=(solid, 1.0))
     s.u[:] = U
     s.u[s.u_solid] = 0.0
     s._apply_velocity_bc()

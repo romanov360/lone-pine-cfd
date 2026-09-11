@@ -150,11 +150,21 @@ class Solver:
     def __init__(self, dom: Domain, mat: Materials, bc: BC, T0: np.ndarray,
                  cfl: float = 0.35, diff_safety: float = 0.25,
                  n_proj: int = 1, eta: float | None = None,
-                 hard_mask: bool = False):
+                 hard_mask: bool = False,
+                 T_pin: tuple[np.ndarray, float] | None = None):
         self.d, self.m, self.bc = dom, mat, bc
         self.n_proj = n_proj
         self.eta = eta            # Brinkman penalisation time, s
         self.hard_mask = hard_mask
+        # (mask, value): hold these cells at a fixed temperature every step.
+        # This is the only honest way to impose an isothermal body. Giving a
+        # solid a huge conductivity AND a huge heat capacity does NOT do it:
+        # the two divide, so the body's DIFFUSIVITY ends up orders of magnitude
+        # BELOW the fluid's, its surface cells cool faster than its interior
+        # can resupply them, and the extracted film coefficient comes out low --
+        # increasingly so the more heat is being drawn off, which shows up as
+        # a Nusselt number that falls with Reynolds number.
+        self.T_pin = T_pin
         nx, ny = dom.nx, dom.ny
         self.u = np.zeros((nx + 1, ny))
         self.v = np.zeros((nx, ny + 1))
@@ -413,6 +423,9 @@ class Solver:
             self._apply_domain_bc()
         self.p = phi_total
         self._advance_temperature(dt)
+        if self.T_pin is not None:
+            mask, value = self.T_pin
+            self.T[mask] = value
 
         self.t += dt
         self.step_count += 1

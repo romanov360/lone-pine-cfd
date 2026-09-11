@@ -141,7 +141,9 @@ class CFDCase:
 def run(case: CFDCase, verbose: bool = True, progress_every: float = 60.0):
     dom, mat, bc, T0, geo = case.build()
     B = geo["bottle"]
-    s = Solver(dom, mat, bc, T0, cfl=0.35, n_proj=case.n_proj, eta=case.eta)
+    pin = (geo["outer"], case.T_bottle0) if case.isothermal_bottle else None
+    s = Solver(dom, mat, bc, T0, cfl=0.35, n_proj=case.n_proj, eta=case.eta,
+               T_pin=pin)
     if case.mode == "creek":
         s.u[:] = case.U
         s.u[s.u_solid] = 0.0
@@ -174,7 +176,7 @@ def run(case: CFDCase, verbose: bool = True, progress_every: float = 60.0):
             T_bath = float(T[fluid_out].mean())
             Q, per = s.interface_heat_rate(outer)
             # Surface temperature: mean over the outermost shell cells.
-            surf = T[outer].max() if case.isothermal_bottle else _surface_T(T, outer)
+            surf = case.T_bottle0 if case.isothermal_bottle else _surface_T(T, outer)
             # Reference temperature for h. In a closed box the bath mean IS the
             # far field. In a channel it is not: the warm wake stretches
             # downstream and drags the domain mean up, which would report a
