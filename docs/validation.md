@@ -157,17 +157,28 @@ The box results in §7 only mean something if the same solver reproduces the
 correlation where the correlation is trustworthy. Run in an open channel
 instead of a closed box, with the bottle held isothermal:
 
-| setting | h from CFD | mixed-convection correlation | ratio |
-|---|---|---|---|
-| closed channel, no current | 441 ± 27 | 520 | 0.85 |
-| creek at 0.01 m/s | 524 ± 16 | 528 | **0.99** |
-| creek at 0.02 m/s | 577 ± 26 | 552 | 1.05 |
-| creek at 0.05 m/s | 771 ± 60 | 672 | 1.15 |
+| setting | Re | h from CFD | correlation | ratio |
+|---|---|---|---|---|
+| closed channel, no current | — | 441 ± 27 | 520 | 0.85 |
+| creek at 0.01 m/s | 540 | 524 ± 16 | 528 | **0.99** |
+| creek at 0.02 m/s | 1,080 | 577 ± 26 | 552 | 1.05 |
+| creek at 0.05 m/s | 2,700 | 771 ± 60 | 672 | 1.15 |
+| creek at 0.10 m/s | 5,400 | 775 ± 55 | 897 | 0.86 |
 
-At 0.01 m/s the agreement is within 1 %. It widens with velocity, which is
-expected and is the reason the study's fast-creek numbers come from
-correlations: a two-dimensional simulation cannot represent a
-three-dimensional wake, and by 0.05 m/s that is starting to tell.
+At 0.01 m/s the agreement is within 1 %. It then degrades, and at 0.1 m/s the
+error changes *sign* — which is the useful signal. A discretisation error would
+shrink smoothly; an error that grows, flips and comes with ±55 of scatter is
+the two-dimensional representation ceasing to be physical. By Re ≈ 5,000 a real
+cylinder wake is three-dimensional and transitional, and a 2-D simulation
+cannot cascade energy the right way.
+
+The sweep was stopped there rather than extended to 0.2 m/s. That point would
+have cost about four hours of compute to produce a number at Re ≈ 11,000, where
+the method is already known not to apply. **This is exactly why the study's
+fast-creek film coefficients come from experimental correlations and not from
+this solver** — and why the CFD's job in the forced-convection branch is to
+confirm the correlation where a 2-D simulation is trustworthy, which it does to
+1 % at 0.01 m/s.
 
 The first row is the useful contrast. The *same solver*, in a channel with no
 current, gives 441 — well above the 323–445 range the box gives, and the box's

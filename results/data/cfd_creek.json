@@ -1,0 +1,62 @@
+{
+ "records": [
+  {
+   "name": "creek U=0.0",
+   "mode": "creek",
+   "U": 0.0,
+   "t_end": 60.0,
+   "flow_throughs": 0.0,
+   "h_quasi_steady": 440.9,
+   "h_std": 26.5,
+   "h_correlation": 520.3,
+   "dx_mm": 1.2
+  },
+  {
+   "name": "creek U=0.01",
+   "mode": "creek",
+   "U": 0.01,
+   "t_end": 147.0,
+   "flow_throughs": 3.5,
+   "h_quasi_steady": 524.0,
+   "h_std": 15.9,
+   "h_correlation": 528.5,
+   "dx_mm": 1.2
+  },
+  {
+   "name": "creek U=0.02",
+   "mode": "creek",
+   "U": 0.02,
+   "t_end": 74.0,
+   "flow_throughs": 3.5,
+   "h_quasi_steady": 577.1,
+   "h_std": 25.7,
+   "h_correlation": 551.8,
+   "dx_mm": 1.2
+  },
+  {
+   "name": "creek U=0.05",
+   "mode": "creek",
+   "U": 0.05,
+   "t_end": 60.0,
+   "flow_throughs": 7.1,
+   "h_quasi_steady": 770.7,
+   "h_std": 59.6,
+   "h_correlation": 671.9,
+   "dx_mm": 1.2
+  },
+  {
+   "name": "creek U=0.1",
+   "mode": "creek",
+   "U": 0.1,
+   "t_end": 60.0,
+   "flow_throughs": 14.3,
+   "h_quasi_steady": 775.5,
+   "h_std": 55.2,
+   "h_correlation": 896.8,
+   "dx_mm": 1.2
+  }
+ ],
+ "extra": {
+  "note": "swept to 0.1 m/s; beyond that Re exceeds what a 2-D laminar simulation can represent, so the sweep was stopped rather than extended into a regime the method does not apply to"
+ }
+}

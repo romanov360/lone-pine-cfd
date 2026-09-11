@@ -385,10 +385,13 @@ ul.notes li{margin-bottom:.5em;}
     <div class="scroll"><table id="creektable"><thead><tr>
       <th>Setting</th><th>h from CFD</th><th>correlation</th><th>ratio</th>
       </tr></thead><tbody></tbody></table></div>
-    <p class="foot">The agreement degrades as the current rises, which is expected: a
-    two-dimensional simulation cannot represent a three-dimensional wake, and this is exactly
-    why the fast-creek numbers in this study come from experimental correlations rather than
-    from the CFD.</p>
+    <p class="foot">The agreement then degrades, and by 0.1 m/s the error has changed
+    <em>sign</em> &mdash; which is the useful signal. A discretisation error shrinks smoothly;
+    an error that grows, flips, and arrives with large scatter is the two-dimensional
+    representation ceasing to be physical. At Re &asymp; 5,000 a real cylinder wake is
+    three-dimensional and transitional, and a 2-D simulation cannot cascade energy the right
+    way. That is exactly why the fast-creek numbers in this study come from experimental
+    correlations rather than from this solver.</p>
   </div>
   <div class="fig">
     <h3>The head-to-head, run twice on the same mesh</h3>
@@ -859,7 +862,8 @@ function lineChart(el, opt){
     '<tr><td colspan="4" style="text-align:left;color:var(--ink-3)">Creek sweep pending.</td></tr>';
     return; }
   tb.innerHTML = D.cfd_creek.records.map(r => {
-    const lab = r.U === 0 ? 'Closed channel, no current' : `Creek at ${r.U} m/s`;
+    const lab = r.U === 0 ? 'Closed channel, no current'
+      : `Creek at ${r.U} m/s` + (r.U >= 0.05 ? '  \u2014 beyond 2-D validity' : '');
     const ratio = r.h_quasi_steady / r.h_correlation;
     return `<tr><td>${lab}</td>
       <td class="n">${Math.round(r.h_quasi_steady)} &plusmn; ${Math.round(r.h_std)}</td>
