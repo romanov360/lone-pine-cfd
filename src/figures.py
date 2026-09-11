@@ -364,39 +364,57 @@ def fig_validation():
 
 
 def fig_grid_convergence():
+    """
+    Honest grid study: convergence here is not monotone, because the flow
+    itself is unsteady at Ra ~ 1e9. Plotting a Richardson extrapolation would
+    imply an asymptotic range this data does not have.
+    """
     try:
         d = json.load(open("results/data/cfd_grid.json"))
     except FileNotFoundError:
         return None
-    rec, ex = d["records"], d["extra"]
+    rec = sorted(d["records"], key=lambda r: -r["dx_mm"])
     dx = np.array([r["dx_mm"] for r in rec])
     h = np.array([r["h_quasi_steady"] for r in rec])
-    fig, ax = plt.subplots(figsize=(7.0, 4.3))
-    ax.plot(dx**2, h, "o-", color=BLUE, ms=7, zorder=4, label="CFD")
-    if ex.get("h_extrapolated") and np.isfinite(ex["h_extrapolated"]):
-        he = ex["h_extrapolated"]
-        ax.axhline(he, color=ORANGE, ls=(0, (5, 3)), zorder=3,
-                   label=f"Richardson limit, $\Delta x\to0$: {he:.0f} W/m$^2$K")
-        ax.fill_between([0, max(dx**2) * 1.1],
-                        he * (1 - ex["GCI_pct"] / 100),
-                        he * (1 + ex["GCI_pct"] / 100),
-                        color=ORANGE, alpha=0.13, lw=0, zorder=2,
-                        label=f"grid-convergence index +/-{ex['GCI_pct']:.1f}%")
+    sd = np.array([float(np.nanstd(np.asarray(r["series"]["h_eff"])[
+        np.asarray(r["series"]["t"]) > 0.6 * r["t_end"]])) for r in rec])
+
     import sys
     sys.path.insert(0, "src")
     from correlations import h_free_vertical
     from geometry import BOTTLE_500 as B
     hc = h_free_vertical(B.H_outer, 25.0, 10.0, D=B.D_outer)
+
+    fig, ax = plt.subplots(figsize=(7.6, 4.5))
+    fine = dx <= 1.5
+    lo = (h[fine] - sd[fine]).min()
+    hi = (h[fine] + sd[fine]).max()
+    ax.axhspan(lo, hi, color=ORANGE, alpha=0.13, lw=0, zorder=2,
+               label=f"1.5 mm and finer: {h[fine].mean():.0f} "
+                     f"$\\pm$ {(hi-lo)/2:.0f} W/m$^2$K")
+    ax.errorbar(dx, h, yerr=sd, fmt="o-", color=BLUE, ms=7, capsize=4,
+                elinewidth=1.4, lw=2.0, zorder=4,
+                label="CFD, bars = unsteadiness of the plume")
     ax.axhline(hc, color=INK3, ls=":", zorder=3,
-               label=f"Churchill-Chu correlation ({hc:.0f})")
-    ax.set_xlim(0, max(dx**2) * 1.08)
-    for x, y, dd in zip(dx**2, h, dx):
-        ax.annotate(f"{dd:.2f} mm", (x, y), textcoords="offset points",
-                    xytext=(6, -13), fontsize=8, color=INK2)
-    _style(ax, xlabel="$\Delta x^2$  (mm$^2$)  -- linear here means 2nd order",
+               label=f"Churchill-Chu, infinite medium ({hc:.0f})")
+
+    for x, y, s_ in zip(dx, h, sd):
+        ax.annotate(f"{x:.2f} mm", (x, y), textcoords="offset points",
+                    xytext=(0, -(s_ + 16)), fontsize=8.2, color=INK2,
+                    ha="center")
+    ax.annotate("under-resolved", (dx[0], h[0]), textcoords="offset points",
+                xytext=(14, 2), fontsize=8.5, color=INK2, ha="left")
+
+    ax.set_xlim(2.25, 0.55)
+    ax.set_ylim(340, 545)
+    _style(ax, xlabel="cell size $\\Delta x$ (mm)   --   finer to the right",
            ylabel="quasi-steady $h$  (W/m$^2$K)",
-           title="Grid convergence, bottle at 25 $^\circ$C in a still 10 $^\circ$C box")
-    ax.legend(loc="lower right", fontsize=8.6)
+           title="The mesh is not the limit -- the flow's own unsteadiness is")
+    ax.legend(loc="upper left", fontsize=8.6)
+    ax.text(0.60, hc - 34,
+            "the remaining gap to the correlation\nis confinement, not "
+            "discretisation error",
+            fontsize=8.3, color=INK3, ha="left", va="top")
     return save(fig, "07_grid_convergence")
 
 

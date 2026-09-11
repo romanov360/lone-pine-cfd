@@ -262,10 +262,26 @@ if __name__ == "__main__":
 
     if which in ("all", "cyl"):
         print("3. Cylinder cross-flow")
+        # Two separate questions, deliberately separated.
+        #
+        # (a) Is the FLOW right? Wake length at Re=40 and Strouhal number at
+        #     Re=100 answer that without touching the energy equation.
+        # (b) Is the WALL HEAT FLUX right? At Pr=7 the thermal layer is
+        #     thinner than the momentum layer by ~Pr^(1/3), so a first attempt
+        #     at D/dx=24 came out 40-70% low and Nu even FELL with Reynolds
+        #     number, which is impossible -- a clear signature of an
+        #     unresolved thermal layer rather than a wrong model. So the heat
+        #     transfer is checked at Pr=0.7, where the two layers are
+        #     comparable and the mesh can actually resolve it, plus a
+        #     refinement sequence at Pr=7 to show the error shrinking.
         out["cylinder"] = [
-            cylinder_flow(40, D_cells=24, t_end_D=80, Lx_D=20, Ly_D=10),
-            cylinder_flow(100, D_cells=24, t_end_D=130, Lx_D=22, Ly_D=11),
-            cylinder_flow(200, D_cells=28, t_end_D=130, Lx_D=22, Ly_D=11),
+            cylinder_flow(40, D_cells=24, Pr=0.7, t_end_D=70, Lx_D=18, Ly_D=9),
+            cylinder_flow(100, D_cells=24, Pr=0.7, t_end_D=120, Lx_D=20, Ly_D=10),
+            cylinder_flow(200, D_cells=28, Pr=0.7, t_end_D=120, Lx_D=20, Ly_D=10),
+        ]
+        out["cylinder_refine"] = [
+            cylinder_flow(40, D_cells=n, Pr=7.0, t_end_D=70, Lx_D=16, Ly_D=8)
+            for n in (16, 24, 36, 52)
         ]
         print()
 

@@ -106,25 +106,42 @@ def box_size_study(sizes=((0.12, 0.20), (0.18, 0.26), (0.26, 0.34),
 # ---------------------------------------------------------------------------
 
 
-def creek_study(Us=(0.0, 0.005, 0.01, 0.02, 0.05, 0.10), dx=1.2e-3, t_end=45.0):
-    print("C. Creek velocity: h versus current")
+def creek_study(Us=(0.0, 0.01, 0.02, 0.05, 0.10, 0.20), dx=1.2e-3,
+                up_D=2.0, down_D=4.0):
+    """
+    Film coefficient against current, bottle held isothermal.
+
+    Run length is set from the FLOW-THROUGH time, not fixed. A first attempt
+    used a constant 45 s for every velocity and produced nonsense at the slow
+    end -- at U = 0.005 m/s the domain needs 126 s just to exchange its
+    contents once, so the reported h was measured on a flow that had not yet
+    arrived, and came out at half the still-water value. A creek that slow is
+    below what this domain can resolve in reasonable time and is dropped; the
+    rest are given at least three and a half flow-throughs before averaging.
+    """
     import correlations as co
+    D = 0.070
+    Lx = (up_D + down_D) * D
     recs = []
     for U in Us:
+        t_end = 60.0 if U == 0 else max(60.0, 3.5 * Lx / U)
         c = CFDCase(f"creek U={U}", mode="creek", U=U, dx=dx, t_end=t_end,
                     isothermal_bottle=True, T_bottle0=25.0, T_bath0=10.0,
-                    up_D=2.5, down_D=6.5, half_H=0.13,
+                    up_D=up_D, down_D=down_D, half_H=0.13,
                     record_every=1.0, n_proj=1)
         r = run(c, verbose=False)
-        tail = np.asarray(r["t"]) > 0.55 * t_end
+        tail = np.asarray(r["t"]) > 0.65 * t_end
         s = summarise(r)
         h_tail = np.asarray(r["h_eff"])[tail]
         s["h_quasi_steady"] = float(np.nanmean(h_tail))
         s["h_std"] = float(np.nanstd(h_tail))
+        s["flow_throughs"] = t_end * U / Lx if U else 0.0
         s["h_correlation"] = co.h_external(0.070, 0.161, U, 25.0, 10.0)
         s["series"] = _series(r)
         recs.append(s)
-        print(f"   U={U:6.3f} m/s  h_CFD={s['h_quasi_steady']:7.1f}  "
+        print(f"   U={U:6.3f} m/s  t_end={t_end:6.0f}s "
+              f"({s['flow_throughs']:4.1f} flow-throughs)  "
+              f"h_CFD={s['h_quasi_steady']:6.1f}+/-{s['h_std']:4.1f}  "
               f"h_corr={s['h_correlation']:7.1f}  "
               f"ratio={s['h_quasi_steady']/s['h_correlation']:5.2f}  "
               f"({s['wall_time_s']:.0f} s)", flush=True)
