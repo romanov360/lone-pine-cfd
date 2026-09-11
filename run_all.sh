@@ -31,3 +31,4 @@ python3 src/answer.py | tee results/data/answer.txt
 echo "== figures and web export =="
 python3 src/figures.py all
 python3 src/export_web.py
+python3 src/build_report.py

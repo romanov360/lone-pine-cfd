@@ -189,7 +189,12 @@ python3 src/campaign.py grid       # CFD: grid convergence
 python3 src/campaign.py boxsize    # CFD: confinement
 python3 src/campaign.py creek      # CFD: h versus current
 python3 src/figures.py all         # all figures into results/figures/
+python3 src/export_web.py          # data blob for the report page
+python3 src/build_report.py        # assembles report/report.html
 ```
+
+`run_all.sh` runs the lot in order. Budget a few hours on four cores &mdash; the
+head-to-head transient alone is about two.
 
 ## Caveats
 

@@ -1,0 +1,875 @@
+<title>Still Box or Moving Creek</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@400;500;600&display=swap">
+<style>
+:root{
+  color-scheme: light;
+  --ground:#f1f4f7;
+  --surface:#ffffff;
+  --surface-2:#e9eef3;
+  --ink:#0d1216;
+  --ink-2:#4a5764;
+  --ink-3:#78838f;
+  --line:#dae1e8;
+  --line-2:#c6d0da;
+  --box:#2a78d6;
+  --creek:#eb6834;
+  --wall:#4a3aa7;
+  --core:#1baf7a;
+  --warn:#d03b3b;
+  --shadow:0 1px 2px rgba(13,18,22,.05), 0 8px 24px -12px rgba(13,18,22,.16);
+  --measure:37rem;
+  --wide:62rem;
+}
+@media (prefers-color-scheme: dark){
+  :root:where(:not([data-theme="light"])){
+    color-scheme: dark;
+    --ground:#0d1115;
+    --surface:#161b21;
+    --surface-2:#1d242b;
+    --ink:#e8eef4;
+    --ink-2:#a2aeba;
+    --ink-3:#78838f;
+    --line:#252d35;
+    --line-2:#333c46;
+    --box:#3987e5;
+    --creek:#f0783f;
+    --wall:#9085e9;
+    --core:#22c98d;
+    --warn:#e66767;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --ground:#0d1115;
+  --surface:#161b21;
+  --surface-2:#1d242b;
+  --ink:#e8eef4;
+  --ink-2:#a2aeba;
+  --ink-3:#78838f;
+  --line:#252d35;
+  --line-2:#333c46;
+  --box:#3987e5;
+  --creek:#f0783f;
+  --wall:#9085e9;
+  --core:#22c98d;
+  --warn:#e66767;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.6);
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--ground);
+  color:var(--ink);
+  font-family:"IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  font-size:16px; line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+.page{max-width:var(--wide); margin:0 auto; padding-inline:20px; padding-block:0 96px;}
+.col{max-width:var(--measure);}
+p{margin:0 0 1.05em; color:var(--ink-2);}
+p strong{color:var(--ink); font-weight:600;}
+a{color:var(--box);}
+h1,h2,h3{font-family:"IBM Plex Serif", Georgia, serif; color:var(--ink); text-wrap:balance; margin:0;}
+h1{font-size:clamp(2.1rem,6vw,3.4rem); font-weight:600; line-height:1.08; letter-spacing:-.022em;}
+h2{font-size:clamp(1.4rem,3.4vw,1.85rem); font-weight:600; line-height:1.2; letter-spacing:-.014em;}
+h3{font-size:1.02rem; font-weight:600; line-height:1.35;}
+.mono{font-family:"IBM Plex Mono", ui-monospace, monospace;}
+.eyebrow{
+  font-family:"IBM Plex Mono", ui-monospace, monospace;
+  font-size:.685rem; font-weight:500; letter-spacing:.13em; text-transform:uppercase;
+  color:var(--ink-3);
+}
+.num{font-family:"IBM Plex Mono", ui-monospace, monospace; font-variant-numeric:tabular-nums;}
+
+/* ---------- masthead ---------- */
+header.mast{padding-block:72px 40px; border-bottom:1px solid var(--line);}
+.kicker{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:24px;}
+.kicker .eyebrow{color:var(--ink-2)}
+.dot{width:4px;height:4px;border-radius:50%;background:var(--line-2);flex:none}
+.lede{font-size:1.14rem; line-height:1.58; margin-top:22px; max-width:var(--measure); color:var(--ink-2);}
+.lede b{color:var(--ink); font-weight:600;}
+
+.verdict{
+  margin-top:34px; display:grid; gap:1px; background:var(--line);
+  border:1px solid var(--line); border-radius:3px; overflow:hidden;
+  grid-template-columns:repeat(auto-fit,minmax(158px,1fr));
+}
+.vcell{background:var(--surface); padding:16px 18px 18px;}
+.vcell .eyebrow{display:block; margin-bottom:9px;}
+.vnum{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums;
+  font-size:1.62rem; font-weight:600; line-height:1.1; color:var(--ink); letter-spacing:-.02em;}
+.vnum .u{font-size:.82rem; font-weight:400; color:var(--ink-3); letter-spacing:0;}
+.vsub{font-size:.8rem; color:var(--ink-3); margin-top:6px; line-height:1.35;}
+
+/* ---------- sections ---------- */
+section{padding-block:56px 0;}
+.shead{display:flex; flex-direction:column; gap:9px; margin-bottom:22px;}
+.tagrow{display:flex; gap:8px; flex-wrap:wrap; align-items:center;}
+.tag{
+  font-family:"IBM Plex Mono",monospace; font-size:.66rem; letter-spacing:.09em;
+  text-transform:uppercase; padding:3px 8px; border-radius:2px;
+  border:1px solid var(--line-2); color:var(--ink-3); white-space:nowrap;
+}
+.tag.cfd{border-color:var(--creek); color:var(--creek);}
+.tag.prop{border-color:var(--core); color:var(--core);}
+.tag.corr{border-color:var(--box); color:var(--box);}
+.tag.trans{border-color:var(--wall); color:var(--wall);}
+
+/* ---------- evidence blocks ---------- */
+.fig{
+  margin:30px 0 8px; background:var(--surface); border:1px solid var(--line);
+  border-radius:3px; padding:22px 22px 18px; box-shadow:var(--shadow);
+}
+.fig h3{margin-bottom:4px;}
+.fig .cap{font-size:.845rem; color:var(--ink-3); margin:0 0 20px; line-height:1.5; max-width:56ch;}
+.fig .foot{font-size:.795rem; color:var(--ink-3); margin:16px 0 0; line-height:1.5;}
+.scroll{overflow-x:auto; -webkit-overflow-scrolling:touch;}
+
+/* ---------- legend ---------- */
+.legend{display:flex; gap:16px; flex-wrap:wrap; margin:0 0 16px; font-size:.8rem; color:var(--ink-2);}
+.lg{display:inline-flex; align-items:center; gap:7px;}
+.sw{width:11px;height:11px;border-radius:2px;flex:none}
+.sw.line{height:3px;width:15px;border-radius:2px}
+
+/* ---------- stacked resistance bars ---------- */
+.chain{display:flex; flex-direction:column; gap:14px;}
+.crow{display:grid; grid-template-columns:132px 1fr 74px; gap:14px; align-items:center;}
+.clabel{font-size:.835rem; color:var(--ink); line-height:1.25;}
+.clabel small{display:block; color:var(--ink-3); font-size:.745rem;}
+.cbar{display:flex; height:30px; border-radius:2px; overflow:hidden; gap:2px; background:transparent;}
+.cseg{display:flex; align-items:center; justify-content:center; font-family:"IBM Plex Mono",monospace;
+  font-size:.715rem; font-weight:500; color:#fff; min-width:0; overflow:hidden;}
+.cU{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums;
+  font-size:.92rem; font-weight:600; text-align:right; color:var(--ink);}
+.cU small{display:block; font-weight:400; font-size:.7rem; color:var(--ink-3);}
+
+/* ---------- tables ---------- */
+table{border-collapse:collapse; width:100%; font-size:.855rem;}
+th,td{padding:9px 12px; text-align:right; border-bottom:1px solid var(--line);}
+th{font-family:"IBM Plex Mono",monospace; font-size:.69rem; letter-spacing:.07em;
+  text-transform:uppercase; color:var(--ink-3); font-weight:500; white-space:nowrap;
+  border-bottom:1px solid var(--line-2);}
+td:first-child,th:first-child{text-align:left; color:var(--ink);}
+td{color:var(--ink-2); font-variant-numeric:tabular-nums;}
+td.n{font-family:"IBM Plex Mono",monospace; color:var(--ink);}
+tr:last-child td{border-bottom:none;}
+tbody tr.hi td{background:color-mix(in srgb, var(--creek) 7%, transparent);}
+.never{color:var(--warn); font-weight:600;}
+
+/* ---------- crossover grid ---------- */
+.xgrid{display:grid; gap:2px; font-family:"IBM Plex Mono",monospace; font-size:.76rem;
+  font-variant-numeric:tabular-nums; min-width:460px;}
+.xc{padding:9px 4px; text-align:center; border-radius:2px; color:#0d1216;}
+.xh{color:var(--ink-3); background:transparent; font-size:.7rem; padding:6px 4px;}
+.xr{color:var(--ink-2); background:transparent; text-align:right; padding-right:9px; font-size:.74rem;}
+.xn{background:var(--surface-2); color:var(--warn); font-weight:600;}
+
+/* ---------- lever bars ---------- */
+.levers{display:flex; flex-direction:column; gap:9px;}
+.lv{display:grid; grid-template-columns:minmax(120px,1fr) 2fr 58px; gap:12px; align-items:center; font-size:.85rem;}
+.lv .nm{color:var(--ink); line-height:1.3;}
+.lvtrack{height:22px; background:var(--surface-2); border-radius:2px; position:relative; overflow:hidden;}
+.lvbar{height:100%; border-radius:2px;}
+.lvval{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums;
+  text-align:right; font-size:.83rem; color:var(--ink); font-weight:500;}
+
+/* ---------- property bars ---------- */
+.pbars{display:flex; flex-direction:column; gap:13px;}
+.pb{display:grid; grid-template-columns:minmax(112px,150px) 1fr; gap:14px; align-items:center;}
+.pbname{font-size:.83rem; color:var(--ink);}
+.pbstack{display:flex; flex-direction:column; gap:5px;}
+.pbrow{display:flex; align-items:center; gap:9px;}
+.pbtrack{flex:1; height:13px; background:var(--surface-2); border-radius:2px; overflow:hidden; min-width:40px;}
+.pbfill{height:100%; border-radius:2px;}
+.pbval{font-family:"IBM Plex Mono",monospace; font-size:.715rem; color:var(--ink-2);
+  width:88px; text-align:right; font-variant-numeric:tabular-nums; flex:none;}
+
+/* ---------- callout ---------- */
+.callout{
+  border-left:3px solid var(--creek); background:var(--surface);
+  padding:16px 20px; margin:26px 0; border-radius:0 3px 3px 0;
+  box-shadow:var(--shadow);
+}
+.callout p:last-child{margin-bottom:0;}
+.callout .eyebrow{display:block; margin-bottom:8px; color:var(--creek);}
+.callout.blue{border-left-color:var(--box);}
+.callout.blue .eyebrow{color:var(--box);}
+
+/* ---------- svg charts ---------- */
+svg.chart{display:block; width:100%; height:auto; overflow:visible;}
+svg.chart text{font-family:"IBM Plex Mono", monospace; font-size:10.5px; fill:var(--ink-3);}
+svg.chart text.axt{font-size:11px; fill:var(--ink-2);}
+svg.chart .gl{stroke:var(--line); stroke-width:1;}
+svg.chart .ax{stroke:var(--line-2); stroke-width:1;}
+
+footer{margin-top:68px; padding-top:26px; border-top:1px solid var(--line);
+  font-size:.82rem; color:var(--ink-3);}
+footer p{color:var(--ink-3); font-size:.82rem;}
+ul.notes{margin:0; padding-left:1.1em; color:var(--ink-2); font-size:.9rem;}
+ul.notes li{margin-bottom:.5em;}
+
+@media (max-width:620px){
+  .crow{grid-template-columns:1fr; gap:6px;}
+  .cU{text-align:left;}
+  .cU small{display:inline; margin-left:6px;}
+  .lv{grid-template-columns:1fr 46px; }
+  .lv .lvtrack{grid-column:1 / -1;}
+  .pb{grid-template-columns:1fr;}
+  header.mast{padding-block:44px 32px;}
+  .fig{padding:18px 14px 14px;}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+:focus-visible{outline:2px solid var(--box); outline-offset:2px;}
+</style>
+
+<div class="page">
+
+<header class="mast">
+  <div class="kicker">
+    <span class="eyebrow">Computational fluid dynamics</span><span class="dot"></span>
+    <span class="eyebrow">500 mL glass bottle</span><span class="dot"></span>
+    <span class="eyebrow">40 &deg;C into 10 &deg;C water</span>
+  </div>
+  <h1>Still box or<br>moving creek?</h1>
+  <p class="lede">A warm glass bottle goes into cold water two ways &mdash; a box of motionless
+  water, and a flowing creek. <b>The creek wins, essentially always.</b> But the reason is
+  not the one the question implies, and the margin is far smaller than intuition suggests.
+  A brisk current multiplies the outside film coefficient by <b>3.7&times;</b> and the actual
+  cooling rate by <b>1.27&times;</b>, because the outside of the bottle was never what was
+  holding things up.</p>
+
+  <div class="verdict" id="verdict"></div>
+</header>
+
+<section>
+  <div class="shead col">
+    <div class="tagrow"><span class="tag corr">Correlations</span><span class="tag trans">Transient model</span></div>
+    <h2>The answer, and the catch</h2>
+  </div>
+  <div class="col">
+    <p>Four ways of running the same 500 mL bottle down from 40&nbsp;&deg;C. The creek reaches
+    every milestone first. But look at the last column: the still box does not converge on the
+    creek's temperature at all &mdash; it converges on its own, warmer one, because a box is a
+    finite reservoir and the bottle heats it up.</p>
+  </div>
+  <div class="fig">
+    <h3>Time to reach each temperature</h3>
+    <p class="cap">Bath at 10 &deg;C except where noted. &ldquo;Settles at&rdquo; is the
+    equilibrium the bottle and its bath share once nothing more can happen.</p>
+    <div class="scroll"><table id="headtable"><thead><tr>
+      <th>Setup</th><th>&rarr; 25 &deg;C</th><th>&rarr; 15 &deg;C</th><th>&rarr; 12 &deg;C</th>
+      <th>at 30 min</th><th>settles at</th></tr></thead><tbody></tbody></table></div>
+  </div>
+</section>
+
+<section>
+  <div class="shead col">
+    <div class="tagrow"><span class="tag corr">Correlations</span><span class="tag trans">Conjugate model</span></div>
+    <h2>Why the creek barely helps</h2>
+  </div>
+  <div class="col">
+    <p>Heat leaving the bottle crosses three resistances in series: the water inside must
+    reach the wall, the wall must conduct, and the outside film must carry it away. A current
+    acts on <em>one</em> of those three &mdash; and on a glass bottle it is the smallest one.</p>
+    <p>The 3 mm glass wall alone is worth an equivalent film coefficient of just
+    <b class="num">317 W/m&sup2;K</b>. Still water already supplies
+    <b class="num">466</b>. By the time the creek is running at 0.35 m/s the outside film has
+    stopped being a bottleneck at all &mdash; it is down to a tenth of the total.</p>
+  </div>
+  <div class="fig">
+    <h3>Where the resistance sits</h3>
+    <p class="cap">Share of total thermal resistance, and the overall coefficient U that
+    results. Only the copper band is the creek's to change.</p>
+    <div class="legend">
+      <span class="lg"><span class="sw" style="background:var(--core)"></span>Water inside</span>
+      <span class="lg"><span class="sw" style="background:var(--wall)"></span>Glass wall</span>
+      <span class="lg"><span class="sw" style="background:var(--creek)"></span>Outside film</span>
+    </div>
+    <div class="chain" id="chain"></div>
+    <p class="foot">Going from still water to a fast 1.5 m/s creek multiplies the outside film
+    coefficient by 9.2 &mdash; and the overall U by 1.35.</p>
+  </div>
+  <div class="fig">
+    <h3>Film coefficient against current</h3>
+    <p class="cap">Each of six independent forced-convection correlations is blended with
+    buoyancy by Churchill's asymptotic rule; the band is the spread between them. The creek
+    therefore reduces continuously to still water as the current dies, rather than jumping
+    between two unrelated models.</p>
+    <div id="hvel"></div>
+  </div>
+</section>
+
+<section>
+  <div class="shead col">
+    <div class="tagrow"><span class="tag trans">Transient model</span></div>
+    <h2>The effect that actually dominates: the box fills up</h2>
+  </div>
+  <div class="col">
+    <p>Cooling a 500 mL bottle from 40&nbsp;&deg;C to 5&nbsp;&deg;C dumps about
+    <b class="num">82 kJ</b> into the bath. A 2 L box has a heat capacity of only 8.4 kJ/K,
+    so it warms by more than 6 degrees absorbing that &mdash; and the bottle cannot get colder
+    than the water around it. A 2 L box equilibrates at <b>16.5&nbsp;&deg;C</b> and never
+    reaches 15 at all, no matter how hard you stir it.</p>
+    <p>A creek is not just moving. It is <em>unlimited</em>, which for this problem is the more
+    valuable property of the two.</p>
+  </div>
+  <div class="fig">
+    <h3>Cooling curves</h3>
+    <p class="cap">Heavy lines are the bottle; faint lines beneath are the bath warming up
+    to meet it.</p>
+    <div id="curves"></div>
+  </div>
+  <div class="fig">
+    <h3>Minutes to reach 15 &deg;C</h3>
+    <p class="cap">Bath volume down the side, current across the top. Moving down a column
+    costs more than moving left along a row: reservoir size beats stirring.</p>
+    <div class="scroll"><div class="xgrid" id="xgrid"></div></div>
+    <p class="foot">At 200 L the creek's advantage is 99 % current and 2 % reservoir size. At
+    5 L the two are comparable. At 2 L the box cannot finish the job at any stirring rate,
+    so reservoir size is the whole story.</p>
+  </div>
+</section>
+
+<section>
+  <div class="shead col">
+    <div class="tagrow"><span class="tag cfd">CFD</span></div>
+    <h2>What the simulation adds</h2>
+  </div>
+  <div class="col">
+    <p>Textbook free-convection correlations assume a body hanging in an infinite quiescent
+    medium. A box is not one, and the difference is large enough to matter. Running the real
+    geometry &mdash; buoyancy, plume, walls and all &mdash; shows a tight box strangling its
+    own convection:</p>
+  </div>
+  <div class="fig">
+    <h3>A box is not an infinite medium</h3>
+    <p class="cap">Bottle held at 25 &deg;C in 10 &deg;C water, 2-D Boussinesq
+    Navier&ndash;Stokes with a conjugate wall. The correlation predicts 520 W/m&sup2;K
+    regardless of the box.</p>
+    <div class="scroll"><table id="boxtable"><thead><tr>
+      <th>Box</th><th>Side gap</th><th>h from CFD</th><th>vs correlation</th>
+      <th>Bath warmed</th><th>Top &minus; bottom</th></tr></thead><tbody></tbody></table></div>
+    <p class="foot">The film coefficient plateaus at 445 W/m&sup2;K once the side gap exceeds
+    about one bottle diameter &mdash; the 26 cm and 40 cm boxes agree to 0.4 % &mdash; and
+    collapses to 323 when the gap closes to a third of a diameter. Confinement alone costs
+    27 % in a tight tub. The narrow box does two things to itself at once: it recirculates
+    water the bottle has already warmed, and it stratifies, so the warmest water pools at the
+    top, exactly where the bottle is.</p>
+  </div>
+  <div class="fig">
+    <h3>The box warms itself from the top down</h3>
+    <p class="cap">Water temperature in a vertical slice through the bottle, in a
+    24 &times; 30 cm closed box. The bottle (grey) starts at 40 &deg;C, the water at
+    10 &deg;C. Conjugate glass wall, 160 &times; 200 cells.</p>
+    <img src="__FIG_FIELDS__" alt="Four temperature fields
+      showing a buoyant plume rising off the bottle and building a warm stratified
+      layer that descends past it" style="width:100%;height:auto;border-radius:2px">
+    <p class="foot">The plume leaves the top of the bottle, spreads under the lid, and
+    builds a stable warm layer that grows downward. By five minutes the bottle's upper
+    half is no longer sitting in 10 &deg;C water &mdash; it is sitting in 14 &deg;C
+    water it warmed itself. This is what a correlation for &ldquo;an infinite quiescent
+    medium&rdquo; cannot represent, and it is why the measured film coefficient falls
+    below the textbook value as the box tightens.</p>
+  </div>
+  <div class="fig">
+    <h3>In open water the correlation is right; in a box it is not</h3>
+    <p class="cap">The same CFD, same bottle, run in a channel instead of a box. Here the
+    textbook mixed-convection correlation is reproduced almost exactly &mdash; which is what
+    makes the box result above meaningful rather than a solver artefact.</p>
+    <div class="scroll"><table id="creektable"><thead><tr>
+      <th>Setting</th><th>h from CFD</th><th>correlation</th><th>ratio</th>
+      </tr></thead><tbody></tbody></table></div>
+    <p class="foot">The agreement degrades as the current rises, which is expected: a
+    two-dimensional simulation cannot represent a three-dimensional wake, and this is exactly
+    why the fast-creek numbers in this study come from experimental correlations rather than
+    from the CFD.</p>
+  </div>
+  <div class="fig">
+    <h3>The head-to-head, run twice on the same mesh</h3>
+    <p class="cap">Identical bottle, identical 1.5 mm mesh, identical solver. The only
+    difference between the two runs is the boundary condition: closed walls versus inflow and
+    outflow at 2 cm/s &mdash; a slow creek, barely a walking pace for water.</p>
+    <div class="scroll"><table id="h2htable"><thead><tr>
+      <th>Bottle core temperature</th><th>2 min</th><th>4 min</th><th>6 min</th>
+      <th>heat removed</th></tr></thead><tbody></tbody></table></div>
+    <p class="foot">Two centimetres per second of current removes a third more heat over six
+    minutes than no current at all. The still box also warms its own bath to 11.9 &deg;C and
+    builds 3.8 K of top-to-bottom stratification over the same period; the creek's bath does
+    not move. Total energy is conserved to 0.04 % in the closed case.</p>
+  </div>
+</section>
+
+<section>
+  <div class="shead col">
+    <div class="tagrow"><span class="tag prop">Property model</span></div>
+    <h2>Oxygenation: three questions, three different answers</h2>
+  </div>
+  <div class="col">
+    <p>&ldquo;Aerated creek water&rdquo; bundles three physically distinct things together,
+    and they do not agree with each other.</p>
+    <p><b>Dissolved oxygen does nothing.</b> A 10&nbsp;&deg;C creek at full saturation holds
+    11.3 mg/L &mdash; a mass fraction of 1.1&nbsp;&times;&nbsp;10<sup>&minus;5</sup>. Going from
+    zero to <em>twice</em> saturation moves the film coefficient by
+    <b class="num">&minus;0.001 %</b>. The six standard correlations disagree with each other
+    by &plusmn;20 % on the same case, so dissolved oxygen sits four orders of magnitude below
+    the noise floor.</p>
+  </div>
+  <div class="fig">
+    <h3>Dissolved gas versus actual bubbles</h3>
+    <p class="cap">Change in each fluid property. Left bar: going from 0 to 100 % dissolved-oxygen
+    saturation. Right bar: 1 % of the volume replaced by air bubbles. Logarithmic &mdash; the two
+    are not on the same scale.</p>
+    <div class="legend">
+      <span class="lg"><span class="sw" style="background:var(--core)"></span>Dissolved O&#8322;, 0 &rarr; 100 % saturated</span>
+      <span class="lg"><span class="sw" style="background:var(--creek)"></span>Entrained air, 1 % by volume</span>
+    </div>
+    <div class="pbars" id="pbars"></div>
+  </div>
+  <div class="col">
+    <p><b>Bubbles hurt the properties and help by stirring.</b> Real bubbles displace water,
+    and water is what carries the heat &mdash; at 5 % void the mixture loses 5 % of its
+    volumetric heat capacity and 7 % of its conductivity, both the wrong direction. What
+    rescues them is motion: a rising swarm drags liquid along at roughly 0.2 m/s. That is the
+    entire benefit of aeration, and it therefore helps exactly where there was no motion to
+    begin with.</p>
+  </div>
+  <div class="fig">
+    <h3>Aeration helps still water and hurts fast water</h3>
+    <p class="cap">Net change in the film coefficient against entrained air fraction, for four
+    background flow speeds.</p>
+    <div id="aer"></div>
+    <p class="foot">Bubbling air into the still box nearly quadruples its film coefficient.
+    Bubbling air into a 1 m/s creek makes it worse &mdash; the creek already supplied more
+    velocity than the bubbles can add, so all they do is dilute the water. Aeration narrows
+    the gap between the two setups rather than widening it.</p>
+  </div>
+</section>
+
+<section>
+  <div class="shead col">
+    <div class="tagrow"><span class="tag prop">Property model</span></div>
+    <h2>A trap the still box cannot escape</h2>
+  </div>
+  <div class="col">
+    <p>Water is densest at 3.98&nbsp;&deg;C, not at freezing. Below that its thermal expansion
+    coefficient is <em>negative</em> and buoyancy runs backwards. When a bottle's surface and
+    the bath straddle that maximum, their densities become equal &mdash; and free convection,
+    which runs entirely on density difference, simply stops.</p>
+  </div>
+  <div class="fig">
+    <h3>Free convection near the density maximum</h3>
+    <p class="cap">Densities in kg/m&sup3; to six figures, with the resulting buoyancy-driven
+    film coefficient.</p>
+    <div class="scroll"><table id="anom"><thead><tr>
+      <th>Bath</th><th>Surface</th><th style="text-transform:none">density, bath</th><th style="text-transform:none">density, surface</th><th>free-convection h</th>
+      </tr></thead><tbody></tbody></table></div>
+    <p class="foot">A surface at 6 &deg;C in a 2 &deg;C bath has densities equal to six
+    significant figures. A creek does not care &mdash; forced convection has no such hole.
+    Very cold <em>still</em> water underperforms its reputation for exactly this reason.</p>
+  </div>
+  <div class="callout blue">
+    <span class="eyebrow">A note on the algebra</span>
+    <p>The textbook Grashof number <span class="num">g&beta;&Delta;T&nbsp;L&sup3;/&nu;&sup2;</span>
+    returns a negative value here, and the correlations then return NaN. That is not a bug to
+    be clamped away &mdash; it is the algebra complaining about real physics. This study uses
+    an exact density-difference form throughout, which reduces to the usual one away from
+    4 &deg;C and stays valid through it.</p>
+  </div>
+</section>
+
+<section>
+  <div class="shead col">
+    <div class="tagrow"><span class="tag trans">Transient model</span></div>
+    <h2>Things that matter more than whether the water moves</h2>
+  </div>
+  <div class="col">
+    <p>Start from the still 20 L box and change exactly one thing. Finding a creek comes third
+    &mdash; behind the container material and behind six degrees of bath temperature, and only
+    just ahead of stirring the box with your hand, which is free.</p>
+  </div>
+  <div class="fig">
+    <h3>Time to 15 &deg;C after one change</h3>
+    <p class="cap">Shorter is better. The baseline still box is the blue bar.</p>
+    <div class="levers" id="levers"></div>
+    <p class="foot">Swapping glass for PET is the only change that makes things dramatically
+    worse &mdash; plastic conducts a quarter as well as glass, and the wall was already the
+    largest resistance in the chain.</p>
+  </div>
+</section>
+
+<section>
+  <div class="shead col">
+    <div class="tagrow"><span class="tag cfd">Verification &amp; validation</span></div>
+    <h2>How the solver was checked</h2>
+  </div>
+  <div class="col">
+    <p>The CFD is a purpose-built staggered-grid incompressible Navier&ndash;Stokes solver with
+    Boussinesq buoyancy, van Leer TVD advection, a separable Poisson solver and a single-domain
+    conjugate energy equation. None of its results are worth reading unless it reproduces
+    problems whose answers are already known, so it was run against three of them first.</p>
+  </div>
+  <div class="fig">
+    <h3>Benchmarks</h3>
+    <p class="cap">Each benchmark exercises a different part of the solver, in the order the
+    parts are stacked.</p>
+    <div class="scroll"><table><thead><tr>
+      <th>Benchmark</th><th>Exercises</th><th>Reference</th><th>Result</th></tr></thead>
+      <tbody id="valbody"></tbody></table></div>
+    <p class="foot">The heated-cavity agreement matters most here: it is the same physics as a
+    bottle shedding a buoyant plume into a closed box, and it lands within 0.73 % across three
+    decades of Rayleigh number.</p>
+  </div>
+  <div class="col">
+    <p>Grid convergence was run on the box case at four spacings from 2.0 down to 0.75 mm. The
+    coarsest is clearly under-resolved; the three finest agree to within the run-to-run
+    scatter of the flow itself, which at Ra&nbsp;&asymp;&nbsp;10<sup>9</sup> is genuinely
+    unsteady. No asymptotic range is established, so no extrapolated value is quoted as though
+    one were. The honest reading is <b class="num">h = 435 &plusmn; 10 W/m&sup2;K</b> in a
+    24&nbsp;cm box.</p>
+    <p>Two bugs were caught by these benchmarks rather than by inspection, and both are worth
+    naming because both produced plausible-looking numbers. The first: an &ldquo;isothermal&rdquo;
+    body was approximated by giving it a large conductivity <em>and</em> a very large heat
+    capacity &mdash; which divide, leaving its diffusivity a thousand times below the
+    surrounding water, so its surface cooled and every film coefficient came out low. The
+    giveaway was a Nusselt number that <em>fell</em> with Reynolds number. The second: a thin
+    glass wall cannot be held by any immersed-boundary treatment at two or three cells thick;
+    hard masking destroyed the divergence-free condition and penalisation leaked the bottle's
+    contents into the bath in twenty seconds. Both were found by energy-conservation and
+    benchmark checks, which is what those checks are for.</p>
+  </div>
+</section>
+
+<section>
+  <div class="shead col">
+    <div class="tagrow"><span class="tag">Limits</span></div>
+    <h2>What this does not settle</h2>
+  </div>
+  <div class="col">
+    <ul class="notes">
+      <li><b>The CFD is two-dimensional.</b> That is the right call for plume structure,
+      confinement and stratification, but a real creek at Re&nbsp;&asymp;&nbsp;23,000 is
+      three-dimensional and turbulent. Fast-creek film coefficients come from correlations;
+      the CFD covers the range where a 2-D simulation is defensible and checks them there.</li>
+      <li><b>Circulation inside the bottle is modelled, not resolved.</b> A 3 mm glass wall is
+      two or three cells thick, and no immersed-boundary treatment holds a membrane that thin
+      without either destroying the divergence-free condition or leaking the bottle's contents
+      into the bath. The interior is carried as an effective conductivity instead. Whether the
+      water inside circulates is worth a factor of three &mdash; more than the entire
+      box-versus-creek question &mdash; and it is the largest single uncertainty here.</li>
+      <li><b>The bottle is assumed submerged and still.</b> A bottle actually wedged in a creek
+      also gets held in continuously fresh water, which is the infinite-reservoir effect again,
+      by another route.</li>
+      <li><b>Correlation spread is &plusmn;20 %.</b> Six standard forced-convection
+      correlations were carried in parallel throughout rather than picking one; where they
+      disagree, that disagreement is shown rather than averaged away.</li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  <p>Built with CoolProp (IAPWS-95 water properties), the <span class="mono">ht</span>
+  correlation library, FiPy for the axisymmetric conjugate model, and a purpose-built 2-D
+  Navier&ndash;Stokes solver. Benchmarks: Ghia, Ghia &amp; Shin (1982); de Vahl Davis (1983);
+  Churchill &amp; Bernstein (1977); Benson &amp; Krause (1984) for oxygen solubility; Roache /
+  Celik for the grid-convergence index.</p>
+</footer>
+
+</div>
+
+<script id="data" type="application/json">/*__DATA__*/</script>
+<script>
+const D = JSON.parse(document.getElementById('data').textContent);
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const fmtT = s => s == null ? null : (s < 5400 ? (s/60).toFixed(1)+' min' : (s/3600).toFixed(2)+' h');
+
+/* ---------- verdict tiles ---------- */
+(function(){
+  const box = D.headline[0], creek = D.headline[1];
+  const tiles = [
+    ['Creek advantage', (box.t15/creek.t15).toFixed(2)+'&times;', 'faster to 15 &deg;C than a still 20 L box'],
+    ['Outside film', '3.7&times;', 'higher h at 0.35 m/s &mdash; but only 10 % of the resistance'],
+    ['Glass wall', '53<span class="u"> %</span>', 'of the total resistance in a creek. Untouchable.'],
+    ['Dissolved O&#8322;', '0.001<span class="u"> %</span>', 'effect on h, across the full saturation range']
+  ];
+  document.getElementById('verdict').innerHTML = tiles.map(([a,b,c]) =>
+    `<div class="vcell"><span class="eyebrow">${a}</span>
+     <div class="vnum">${b}</div><div class="vsub">${c}</div></div>`).join('');
+})();
+
+/* ---------- headline table ---------- */
+(function(){
+  const tb = document.querySelector('#headtable tbody');
+  tb.innerHTML = D.headline.map((r,i) => {
+    const cell = v => v == null ? '<td class="never">never</td>' : `<td class="n">${fmtT(v)}</td>`;
+    return `<tr class="${i===1?'hi':''}"><td>${r.name}</td>${cell(r.t25)}${cell(r.t15)}${cell(r.t12)}
+      <td class="n">${r.T30.toFixed(1)} &deg;C</td><td class="n">${r.Teq.toFixed(1)} &deg;C</td></tr>`;
+  }).join('');
+})();
+
+/* ---------- resistance chain ---------- */
+(function(){
+  const cols = {inside:'var(--core)', wall:'var(--wall)', outside:'var(--creek)'};
+  document.getElementById('chain').innerHTML = D.chain.map(c => {
+    const segs = ['inside','wall','outside'].map(k =>
+      `<div class="cseg" style="width:${c[k]}%;background:${cols[k]}">${c[k] > 9 ? Math.round(c[k])+'%' : ''}</div>`).join('');
+    return `<div class="crow">
+      <div class="clabel">${c.name}<small>h&#8202;=&#8202;${Math.round(c.h_out)} W/m&sup2;K</small></div>
+      <div class="cbar">${segs}</div>
+      <div class="cU">${Math.round(c.U_overall)}<small>U, W/m&sup2;K</small></div></div>`;
+  }).join('');
+})();
+
+/* ---------- generic SVG line chart ---------- */
+function lineChart(el, opt){
+  const W = 720, H = opt.height || 320;
+  const m = opt.margin || {l:58, r:118, t:14, b:42};
+  const iw = W - m.l - m.r, ih = H - m.t - m.b;
+  const lx = opt.logx, ly = opt.logy;
+  const tx = v => lx ? Math.log10(Math.max(v, opt.xmin)) : v;
+  const ty = v => ly ? Math.log10(Math.max(v, opt.ymin)) : v;
+  const x0 = tx(opt.xmin), x1 = tx(opt.xmax), y0 = ty(opt.ymin), y1 = ty(opt.ymax);
+  const X = v => m.l + (tx(v) - x0)/(x1 - x0)*iw;
+  const Y = v => m.t + ih - (ty(v) - y0)/(y1 - y0)*ih;
+  let s = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${opt.aria||''}">`;
+
+  (opt.yticks||[]).forEach(t => {
+    s += `<line class="gl" x1="${m.l}" y1="${Y(t)}" x2="${m.l+iw}" y2="${Y(t)}"/>`;
+    s += `<text x="${m.l-9}" y="${Y(t)+3.6}" text-anchor="end">${opt.yfmt?opt.yfmt(t):t}</text>`;
+  });
+  (opt.xticks||[]).forEach(t => {
+    s += `<text x="${X(t)}" y="${m.t+ih+17}" text-anchor="middle">${opt.xfmt?opt.xfmt(t):t}</text>`;
+  });
+  s += `<line class="ax" x1="${m.l}" y1="${m.t+ih}" x2="${m.l+iw}" y2="${m.t+ih}"/>`;
+  s += `<text class="axt" x="${m.l+iw/2}" y="${H-6}" text-anchor="middle">${opt.xlabel||''}</text>`;
+  s += `<text class="axt" transform="translate(13,${m.t+ih/2}) rotate(-90)" text-anchor="middle">${opt.ylabel||''}</text>`;
+
+  (opt.bands||[]).forEach(b => {
+    const up = b.x.map((v,i)=>`${X(v)},${Y(b.hi[i])}`).join(' ');
+    const dn = b.x.map((v,i)=>`${X(v)},${Y(b.lo[i])}`).reverse().join(' ');
+    s += `<polygon points="${up} ${dn}" fill="${b.color}" fill-opacity="${b.opacity||0.15}" stroke="none"/>`;
+  });
+  (opt.hlines||[]).forEach(h => {
+    s += `<line x1="${m.l}" y1="${Y(h.y)}" x2="${m.l+iw}" y2="${Y(h.y)}" stroke="${h.color}"
+           stroke-width="2" stroke-dasharray="${h.dash||''}" fill="none"/>`;
+    if(h.label) s += `<text x="${m.l+iw+8}" y="${Y(h.y)+3.6}" fill="${h.color}" font-size="10">${h.label}</text>`;
+  });
+  (opt.series||[]).forEach(sr => {
+    const pts = sr.x.map((v,i)=>`${X(v)},${Y(sr.y[i])}`).join(' ');
+    s += `<polyline points="${pts}" fill="none" stroke="${sr.color}" stroke-width="${sr.w||2.2}"
+           stroke-dasharray="${sr.dash||''}" stroke-linejoin="round" stroke-linecap="round"/>`;
+    if(sr.label){
+      const li = sr.labelAt != null ? sr.labelAt : sr.x.length-1;
+      s += `<text x="${X(sr.x[li])+7}" y="${Y(sr.y[li])+3.6}" fill="${sr.color}" font-size="10">${sr.label}</text>`;
+    }
+  });
+  (opt.points||[]).forEach(p => {
+    p.x.forEach((v,i)=>{ s += `<circle cx="${X(v)}" cy="${Y(p.y[i])}" r="4"
+      fill="${p.color}" stroke="${css('--surface')}" stroke-width="1.6"/>`; });
+    if(p.label) s += `<text x="${X(p.x[p.x.length-1])+8}" y="${Y(p.y[p.y.length-1])+3.6}"
+      fill="${p.color}" font-size="10">${p.label}</text>`;
+  });
+  s += '</svg>';
+  el.innerHTML = s;
+}
+
+/* ---------- h vs velocity ---------- */
+(function(){
+  const d = D.h_vs_U, XMIN = 0.005;
+  const idx = d.U.map((u,i)=>i).filter(i => d.U[i] >= XMIN);
+  const xs = idx.map(i=>d.U[i]);
+  const cfd = D.cfd_creek ? D.cfd_creek.records.filter(r=>r.U>0) : [];
+  lineChart(document.getElementById('hvel'), {
+    logx:true, logy:true, xmin:XMIN, xmax:3, ymin:150, ymax:8000, height:330,
+    margin:{l:62,r:156,t:14,b:44},
+    xticks:[0.01,0.03,0.1,0.3,1,3], xfmt:v=>v<1?String(v):v.toFixed(0),
+    yticks:[200,500,1000,2000,5000], yfmt:v=>v>=1000?(v/1000)+'k':v,
+    xlabel:'current past the bottle  (m/s)', ylabel:'film coefficient h  (W/m²K)',
+    aria:'Film coefficient rising with current, against flat still-water and glass-wall references',
+    bands:[{x:xs, lo:idx.map(i=>Math.max(d.lo[i],1)), hi:idx.map(i=>d.hi[i]),
+            color:css('--creek'), opacity:0.16}],
+    hlines:[
+      {y:d.free, color:css('--box'), dash:'', label:'still box, no current'},
+      {y:D.wall_equiv_h, color:css('--wall'), dash:'5 4', label:'glass wall alone'}
+    ],
+    series:[{x:xs, y:idx.map(i=>d.mixed[i]), color:css('--creek'), w:2.4,
+             label:'mixed convection', labelAt:xs.length-1}],
+    points: cfd.length ? [{x:cfd.map(r=>r.U), y:cfd.map(r=>r.h_quasi_steady),
+             color:css('--ink'), label:'CFD'}] : []
+  });
+})();
+
+/* ---------- cooling curves ---------- */
+(function(){
+  const cols = [css('--box'), css('--box'), css('--box'), css('--creek')];
+  const dashes = ['1 5','5 4','',''];
+  const series = [], faint = [];
+  D.curves.forEach((c,i) => {
+    series.push({x:c.t, y:c.T, color:cols[i], dash:dashes[i], w:2.3, label:c.name,
+                 labelAt:c.t.length-1});
+    if(c.name !== 'Creek 0.35 m/s')
+      faint.push({x:c.t, y:c.Tbath, color:cols[i], dash:dashes[i], w:1});
+  });
+  lineChart(document.getElementById('curves'), {
+    xmin:0, xmax:3600, ymin:9, ymax:41, height:340, margin:{l:56,r:128,t:14,b:44},
+    xticks:[0,600,1200,1800,2400,3000,3600], xfmt:v=>v/60,
+    yticks:[10,15,20,25,30,35,40], yfmt:v=>v,
+    xlabel:'time  (minutes)', ylabel:'temperature  (°C)',
+    aria:'Bottle temperature falling over an hour for three box sizes and a creek',
+    hlines:[{y:10, color:css('--ink-3'), dash:'3 4'}],
+    series:[...faint, ...series]
+  });
+})();
+
+/* ---------- crossover grid ---------- */
+(function(){
+  const g = D.crossover, rows = g.t15_min;
+  const vals = rows.flat().filter(v => v != null);
+  const lo = Math.min(...vals), hi = Math.max(...vals);
+  const ramp = ['#cde2fb','#9ec5f4','#6da7ec','#3987e5','#256abf','#184f95','#0d366b'];
+  const el = document.getElementById('xgrid');
+  el.style.gridTemplateColumns = `76px repeat(${g.Us.length}, 1fr)`;
+  let h = `<div class="xh"></div>` + g.Us.map(u=>`<div class="xh">${u}</div>`).join('');
+  rows.forEach((row,i) => {
+    const V = g.volumes[i];
+    h += `<div class="xr">${V == null ? 'unlimited' : (V*1000)+' L'}</div>`;
+    row.forEach(v => {
+      if(v == null){ h += `<div class="xc xn">never</div>`; return; }
+      const f = (v-lo)/(hi-lo);
+      const c = ramp[Math.min(ramp.length-1, Math.floor(f*ramp.length))];
+      h += `<div class="xc" style="background:${c};color:${f>0.5?'#fff':'#0d1216'}">${v.toFixed(0)}</div>`;
+    });
+  });
+  el.innerHTML = h;
+  el.insertAdjacentHTML('afterend',
+    `<div style="font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:var(--ink-3);
+      text-align:center;margin-top:8px">current past the bottle (m/s)</div>`);
+})();
+
+/* ---------- box size table ---------- */
+(function(){
+  const tb = document.querySelector('#boxtable tbody');
+  if(!D.cfd_boxsize){ tb.innerHTML =
+    `<tr><td colspan="6" style="text-align:left;color:var(--ink-3)">CFD box-size sweep pending.</td></tr>`;
+    return; }
+  tb.innerHTML = D.cfd_boxsize.records.map(r => `<tr>
+    <td>${(r.W*100).toFixed(0)} &times; ${(r.H*100).toFixed(0)} cm</td>
+    <td class="n">${r.gap_D.toFixed(2)} D</td>
+    <td class="n">${Math.round(r.h_quasi_steady)}${r.h_std!=null?' &plusmn; '+Math.round(r.h_std):''}</td>
+    <td class="n">${Math.round(r.h_quasi_steady/520*100)} %</td>
+    <td class="n">+${(r.T_bath_final-10).toFixed(1)} K</td>
+    <td class="n">+${(r.T_bath_top_final-r.T_bath_bot_final).toFixed(1)} K</td></tr>`).join('');
+})();
+
+/* ---------- property bars ---------- */
+(function(){
+  const P = D.oxygen.props;
+  const L = v => Math.max(0, (Math.log10(Math.max(v,1e-7)) + 7) / 7.3);
+  document.getElementById('pbars').innerHTML = P.map(p => {
+    const row = (v,c) => `<div class="pbrow"><div class="pbtrack">
+        <div class="pbfill" style="width:${(L(v)*100).toFixed(1)}%;background:${c}"></div></div>
+        <div class="pbval">${v < 1e-6 ? '0' : (v<0.01? v.toExponential(1) : v.toFixed(2))} %</div></div>`;
+    return `<div class="pb"><div class="pbname">${p.name}</div>
+      <div class="pbstack">${row(p.do, 'var(--core)')}${row(p.bub,'var(--creek)')}</div></div>`;
+  }).join('');
+})();
+
+/* ---------- aeration ---------- */
+(function(){
+  const a = D.aeration, xs = a.void.map(v=>v*100);
+  const cols = [css('--box'), css('--core'), css('--creek'), css('--warn')];
+  const dashes = ['','5 4','','2 4'];
+  lineChart(document.getElementById('aer'), {
+    xmin:0, xmax:30, ymin:-60, ymax:300, height:330, margin:{l:58,r:140,t:14,b:44},
+    xticks:[0,5,10,15,20,25,30], yticks:[-50,0,50,100,150,200,250,300],
+    yfmt:v=>(v>0?'+':'')+v,
+    xlabel:'entrained air, void fraction  (%)',
+    ylabel:'change in h  (%)',
+    aria:'Aeration raises h greatly in still water and lowers it in a fast creek',
+    hlines:[{y:0, color:css('--ink-3'), dash:'3 4'}],
+    series:a.series.map((s,i)=>({x:xs, y:s.net, color:cols[i], dash:dashes[i], w:2.3,
+      label:s.name, labelAt:xs.length-1}))
+  });
+})();
+
+/* ---------- levers ---------- */
+(function(){
+  const L = D.levers, max = Math.max(...L.map(l=>l.t15_min));
+  document.getElementById('levers').innerHTML = L.map((l,i) => {
+    const c = i===0 ? 'var(--box)' : (l.speedup >= 1 ? 'var(--creek)' : 'var(--warn)');
+    return `<div class="lv"><div class="nm">${l.name}</div>
+      <div class="lvtrack"><div class="lvbar" style="width:${l.t15_min/max*100}%;background:${c}"></div></div>
+      <div class="lvval">${l.t15_min.toFixed(1)}<span style="color:var(--ink-3);font-size:.72rem"> min</span></div></div>`;
+  }).join('');
+})();
+
+/* ---------- validation table ---------- */
+(function(){
+  const rows = [];
+  rows.push(['Poisson operator','pressure projection','manufactured solution','2.00 order, both BC types']);
+  if(D.val_cavity){
+    const r = D.val_cavity.lid_cavity.map(c=>c.rms.toFixed(4)).join(' / ');
+    rows.push(['Lid-driven cavity, Re 100/400/1000','momentum &amp; pressure coupling','Ghia, Ghia &amp; Shin (1982)', 'RMS error '+r]);
+  }
+  if(D.val_heated){
+    const e = D.val_heated.heated_cavity.map(c=>(c.error_pct>0?'+':'')+c.error_pct.toFixed(2)).join(' / ');
+    rows.push(['Heated cavity, Ra 10<sup>3</sup>&ndash;10<sup>6</sup>','buoyancy &amp; energy','de Vahl Davis (1983)', 'Nu within '+e+' %']);
+  }
+  if(D.val_cyl){
+    const c = D.val_cyl.cylinder[0];
+    const nus = D.val_cyl.cylinder.map(x=>(x.Nu_error_pct>0?'+':'')+x.Nu_error_pct.toFixed(1)).join(' / ');
+    rows.push(['Cylinder, Re 40 &amp; 100','forced convection, immersed boundary',
+      'Churchill &amp; Bernstein (1977)', 'Nu within '+nus+' %']);
+    rows.push(['Cylinder wake, Re 40','immersed-boundary geometry','Coutanceau &amp; Bouard (1977)',
+      'recirculation '+c.Lr_over_D.toFixed(2)+' D vs 2.2 D']);
+  }
+  document.getElementById('valbody').innerHTML = rows.map(r =>
+    `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td class="n">${r[3]}</td></tr>`).join('');
+})();
+
+/* ---------- head-to-head table ---------- */
+(function(){
+  const tb = document.querySelector('#h2htable tbody');
+  if(!tb) return;
+  if(!D.cfd_h2h){ tb.innerHTML =
+    '<tr><td colspan="5" style="text-align:left;color:var(--ink-3)">Head-to-head pending.</td></tr>';
+    return; }
+  tb.innerHTML = D.cfd_h2h.records.map(r => {
+    const c = r.mode === 'box' ? 'var(--box)' : 'var(--creek)';
+    const at = t => { const p = r.series.find(x => Math.abs(x.t - t) < 1);
+                      return p ? p.T_core.toFixed(2) + ' \u00b0C' : '\u2014'; };
+    return `<tr><td><span class="sw" style="background:${c};display:inline-block;
+        margin-right:7px;vertical-align:-1px"></span>${r.name === 'still box'
+        ? 'Still box' : 'Creek, 0.02 m/s'}</td>
+      <td class="n">${at(120)}</td><td class="n">${at(240)}</td><td class="n">${at(360)}</td>
+      <td class="n">${(40 - r.T_core_final).toFixed(2)} K</td></tr>`;
+  }).join('');
+})();
+
+/* ---------- creek CFD table ---------- */
+(function(){
+  const tb = document.querySelector('#creektable tbody');
+  if(!tb) return;
+  if(!D.cfd_creek){ tb.innerHTML =
+    '<tr><td colspan="4" style="text-align:left;color:var(--ink-3)">Creek sweep pending.</td></tr>';
+    return; }
+  tb.innerHTML = D.cfd_creek.records.map(r => {
+    const lab = r.U === 0 ? 'Closed channel, no current' : `Creek at ${r.U} m/s`;
+    const ratio = r.h_quasi_steady / r.h_correlation;
+    return `<tr><td>${lab}</td>
+      <td class="n">${Math.round(r.h_quasi_steady)} &plusmn; ${Math.round(r.h_std)}</td>
+      <td class="n">${Math.round(r.h_correlation)}</td>
+      <td class="n">${ratio.toFixed(2)}&times;</td></tr>`;
+  }).join('');
+})();
+
+/* ---------- anomaly table ---------- */
+(function(){
+  document.querySelector('#anom tbody').innerHTML = D.anomaly.map(a => `<tr${a.h<100?' class="hi"':''}>
+    <td>${a.Tb} &deg;C</td><td class="n">${a.Ts} &deg;C</td>
+    <td class="n">${a.rho_b.toFixed(3)}</td><td class="n">${a.rho_s.toFixed(3)}</td>
+    <td class="n"${a.h<100?' style="color:var(--warn);font-weight:600"':''}>${Math.round(a.h)} W/m&sup2;K</td></tr>`).join('');
+})();
+</script>

@@ -2,3 +2,6 @@ __pycache__/
 *.pyc
 .ipynb_checkpoints/
 *.npz.tmp
+
+# built artefact -- regenerate with `python3 src/build_report.py`
+report/report.html
