@@ -8,6 +8,7 @@ parallel and so a failure in one does not cost the others.
 from __future__ import annotations
 
 import json
+import re
 import sys
 import time
 
@@ -183,8 +184,9 @@ def head_to_head(dx=1.5e-3, t_end=360.0, k_eff_mult=5.0):
         s["series"] = _series(r)
         s["k_eff_mult"] = k_eff_mult
         recs.append(s)
+        tag = re.sub(r"[^A-Za-z0-9]+", "_", c.name).strip("_")
         np.savez_compressed(
-            f"results/data/field_{c.name.replace(' ','_').replace('.','p')}.npz",
+            f"results/data/field_{tag}.npz",
             T=r["final"]["T"], u=r["final"]["u"], v=r["final"]["v"],
             outer=r["geo"]["outer"], dx=c.dx, nx=r["dom"].nx, ny=r["dom"].ny,
             **{f"snapT_{int(k)}": v["T"] for k, v in r["snaps"].items()},

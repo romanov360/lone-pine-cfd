@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import warnings
 
 import numpy as np
@@ -166,19 +167,24 @@ out["bottle"] = {"D": B.D_outer, "H": B.H_outer, "wall": B.wall,
                  "R_wall": B.R_wall, "U_wall": B.U_wall}
 
 # --- 11. CFD results, if present ---------------------------------------
-for tag in ("grid", "boxsize", "creek", "head2head"):
+for tag in ("grid", "boxsize", "creek", "h2h"):
     try:
-        d = json.load(open(f"results/data/cfd_{tag}.json"))
+        path = f"results/data/cfd_{tag}.json"
+        if not os.path.exists(path):
+            path = f"results/data/cfd_{tag}_partial.json"
+        d = json.load(open(path))
         for r in d["records"]:
-            r.pop("series", None)
+            if tag != "h2h":
+                r.pop("series", None)
         out[f"cfd_{tag}"] = d
     except FileNotFoundError:
         pass
 for tag in ("cavity", "heated", "cyl"):
-    try:
-        out[f"val_{tag}"] = json.load(open(f"results/data/validation_{tag}.json"))
-    except FileNotFoundError:
-        pass
+    path = f"results/data/validation_{tag}.json"
+    if not os.path.exists(path):
+        path = f"results/data/validation_{tag}_partial.json"
+    if os.path.exists(path):
+        out[f"val_{tag}"] = json.load(open(path))
 
 json.dump(out, open("results/data/web.json", "w"), default=float)
 print("written results/data/web.json",

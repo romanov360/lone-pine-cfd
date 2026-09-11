@@ -57,35 +57,56 @@ Better than 1 % across three decades of Rayleigh number.
 ## 4. Immersed boundary and forced convection — cylinder cross-flow
 
 A circular cylinder in a channel, the closest standard benchmark to a bottle in
-a current. Two quantities are checked, and they do not come out equally well.
+a current.
 
-**Wake geometry (momentum only).** At Re = 40 the flow is steady with a closed
-recirculation bubble whose length is well established at L/D ≈ 2.2
-(Coutanceau & Bouard, *J. Fluid Mech.* **79**, 1977). At D/Δx = 24 this solver
-gives **L/D = 2.06**, about 6 % short — consistent with a staircase immersed
-boundary at that resolution. The velocity field is good.
+**Heat transfer.** With the cylinder held isothermal, against Churchill &
+Bernstein (1977) at Pr = 0.7 and D/Δx = 24:
 
-**Heat transfer (Pr = 7).** The same run gives Nu = 4.3 against 7.6 from
-Churchill–Bernstein, about 40 % low. This is a resolution limit, not a model
-error, and it is worth being explicit about why:
+| Reynolds number | Nu (this solver) | Nu (correlation) | error |
+|---|---|---|---|
+| 40 | 3.43 | 3.36 | **+2.0 %** |
+| 100 | 5.13 | 5.16 | **−0.5 %** |
+| 200 | 7.06 | 7.19 | **−1.8 %** |
 
-* The wall heat flux is computed as a linear gradient from the wall face to the
-  first fluid cell centre, over Δx/2. That is first-order accurate, and a linear
-  fit *under*-estimates the gradient of a profile that curves away from the
-  wall.
-* At Pr = 7 the thermal boundary layer is thinner than the momentum layer by
-  roughly Pr^(1/3) ≈ 1.9. At Re = 40 it is about D/7.6 ≈ 0.13 D — only three
-  cells at D/Δx = 24.
+Within two percent across the range — comfortably inside the correlation's own
+scatter, and the trend with Reynolds number is now the right sign.
 
-Under-resolving a boundary layer by that margin under-predicts Nu, which is the
-direction observed.
+**Resolution at Pr = 7.** Water has Pr ≈ 7, so its thermal boundary layer is
+thinner than its momentum layer by roughly Pr^(1/3) ≈ 1.9 and needs a finer
+mesh for the same accuracy. A refinement sequence at Re = 40 shows the error
+shrinking as it should:
 
-**This is why the study does not take its forced-convection film coefficients
-from the CFD.** They come from the six correlations in `ht`, which are fits to
-experimental data. The CFD's role in the forced-convection branch is to confirm
-the *flow* is right — which the wake length does — and to explore the mixed
-convection regime at low velocity where the geometry, not the film coefficient,
-is the question.
+| D/Δx | cells across the thermal layer | Nu | error vs correlation |
+|---|---|---|---|
+| 16 | ~2 | 8.72 | +15.2 % |
+| 24 | ~3 | 8.24 | +8.9 % |
+
+This is the practical reason the study's water-side forced-convection numbers
+come from correlations rather than from the CFD: getting Pr = 7 cross-flow to
+correlation accuracy costs a mesh that is not worth buying when experimental
+fits are available and already good.
+
+**Wake geometry.** At Re = 40 the flow is steady with a closed recirculation
+bubble, established at L/D ≈ 2.2 (Coutanceau & Bouard, *J. Fluid Mech.* **79**,
+1977). This solver gives **L/D = 2.02**, about 8 % short, which is what a
+staircase immersed boundary at 24 cells per diameter should give.
+
+**What is *not* checked here: vortex shedding.** At Re = 100 a real cylinder
+sheds at St ≈ 0.164. This one does not shed at all, and the reason is the
+configuration rather than the solver: the cylinder is centred in a uniform
+stream on a symmetric mesh, and nothing breaks that symmetry. Two-dimensional
+cylinder wakes need a perturbation to trip the instability, and none is
+supplied, so the wake stays symmetric and elongated (L/D = 5.5) instead of
+rolling up. The Strouhal number is therefore not measured and is not claimed.
+This does not affect the study: the bottle cases are buoyancy-driven, where the
+instability is supplied by the flow itself.
+
+> **A bug this benchmark caught.** Before the isothermal boundary was imposed
+> properly (see §5), these same runs gave −10 % at Re = 40 and −59 % at
+> Re = 100 — a Nusselt number that *fell* with Reynolds number, which is
+> impossible. The symptom scaled with how much heat was being drawn off, which
+> is what pointed at the boundary condition rather than at the discretisation.
+> Fixing it moved both cases to within 2 %.
 
 ## 5. Grid convergence — the actual case
 

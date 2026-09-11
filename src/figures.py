@@ -194,10 +194,18 @@ def fig_h_vs_velocity():
     U = np.logspace(-3, 0.55, 200)
     fig, ax = plt.subplots(figsize=(7.6, 4.6))
 
-    band = np.array([[h_forced_crossflow(B.D_outer, u, Ts, Tinf, m)
-                      for u in U] for m in _FORCED])
-    ax.fill_between(U, band.min(0), band.max(0), color=ORANGE, alpha=0.16,
-                    lw=0, zorder=2, label="spread of six forced-convection\ncorrelations")
+    # Band = spread of the six correlations AFTER each is blended with
+    # buoyancy, i.e. the uncertainty in the quantity actually plotted. The raw
+    # forced-convection spread would dive away from the curve at low velocity,
+    # where every pure-forced correlation tends to zero but the real transfer
+    # is floored by natural convection.
+    from correlations import h_mixed
+    hfree0 = h_free_vertical(B.H_outer, Ts, Tinf, D=B.D_outer)
+    band = np.array([[h_mixed(h_forced_crossflow(B.D_outer, u, Ts, Tinf, m),
+                              hfree0) for u in U] for m in _FORCED])
+    ax.fill_between(U, band.min(0), band.max(0), color=ORANGE, alpha=0.18,
+                    lw=0, zorder=2,
+                    label="spread of six correlations")
     hmix = np.array([h_external(B.D_outer, B.H_outer, u, Ts, Tinf) for u in U])
     ax.plot(U, hmix, color=ORANGE, zorder=4,
             label="mixed convection (what a creek gives)")
@@ -205,24 +213,28 @@ def fig_h_vs_velocity():
     ax.axhline(hfree, color=BLUE, zorder=3,
                label=f"still box, buoyancy only ({hfree:.0f})")
     ax.axhline(B.U_wall, color=VIOLET, ls=(0, (5, 3)), lw=1.6, zorder=3)
-    ax.text(1.1e-3, B.U_wall * 1.06,
+    ax.text(4.3e-3, B.U_wall * 1.06,
             f"the glass wall alone is worth only {B.U_wall:.0f} W/m$^2$K",
             fontsize=8.5, color=VIOLET)
 
-    try:
-        rec = json.load(open("results/data/cfd_creek.json"))["records"]
-        us = [r["U"] for r in rec]
-        hs = [r["h_quasi_steady"] for r in rec]
-        ax.plot(np.maximum(us, 1.1e-3), hs, "o", color=INK, ms=6.5, zorder=6,
-                mec=SURF, mew=1.5, label="this study's CFD")
-    except FileNotFoundError:
-        pass
+    import os
+    cpath = "results/data/cfd_creek.json"
+    if not os.path.exists(cpath):
+        cpath = "results/data/cfd_creek_partial.json"
+    if os.path.exists(cpath):
+        rec = json.load(open(cpath))["records"]
+        us = np.array([max(r["U"], 1.1e-3) for r in rec])
+        hs = np.array([r["h_quasi_steady"] for r in rec])
+        sd = np.array([r.get("h_std", 0.0) for r in rec])
+        ax.errorbar(us, hs, yerr=sd, fmt="o", color=INK, ms=6.5, zorder=6,
+                    mec=SURF, mew=1.5, capsize=3, elinewidth=1.2,
+                    label="this study's CFD")
 
     ax.set_xscale("log"); ax.set_yscale("log")
-    ax.set_xlim(1e-3, 3.5); ax.set_ylim(60, 7000)
+    ax.set_xlim(4e-3, 3.5); ax.set_ylim(250, 7000)
     _style(ax, xlabel="creek velocity (m/s)",
            ylabel="outside film coefficient  $h$  (W/m$^2$K)",
-           title="The creek wins the film coefficient easily -- and it does not help much",
+           title="The creek wins the film coefficient easily -- and it still barely helps",
            grid="both")
     ax.legend(loc="upper left", fontsize=8.6)
     return save(fig, "03_h_vs_velocity")
@@ -341,8 +353,12 @@ def fig_validation():
     ax.legend(loc="upper left", fontsize=8.4)
 
     ax = axes[2]
+    import os
+    cp = "results/data/validation_cyl.json"
+    if not os.path.exists(cp):
+        cp = "results/data/validation_cyl_partial.json"
     try:
-        cyl = json.load(open("results/data/validation_cyl.json"))["cylinder"]
+        cyl = json.load(open(cp))["cylinder"]
         Re = [r["Re"] for r in cyl]
         ax.plot(Re, [r["Nu_ChurchillBernstein"] for r in cyl], "-o", color=INK3,
                 ms=6, mfc="none", mew=1.5, zorder=3,
@@ -353,11 +369,11 @@ def fig_validation():
             ax.annotate(f"{r['Nu_error_pct']:+.0f}%", (r["Re"], r["Nu"]),
                         textcoords="offset points", xytext=(6, -12),
                         fontsize=8, color=INK2)
-    except FileNotFoundError:
+    except (FileNotFoundError, KeyError):
         pass
     ax.set_xscale("log")
     _style(ax, xlabel="Reynolds number", ylabel="Nusselt number",
-           title="Forced convection: cylinder", grid="both")
+           title="Forced convection: cylinder (Pr = 0.7)", grid="both")
     ax.legend(loc="upper left", fontsize=8.4)
     fig.subplots_adjust(wspace=0.32)
     return save(fig, "06_validation")

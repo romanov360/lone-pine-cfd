@@ -1,0 +1,54 @@
+{
+ "records": [
+  {
+   "name": "still box",
+   "mode": "box",
+   "U": 0.0,
+   "series": [
+    {
+     "t": 120.0,
+     "T_core": 35.54
+    },
+    {
+     "t": 240.0,
+     "T_core": 32.15
+    },
+    {
+     "t": 360.0,
+     "T_core": 29.37
+    }
+   ],
+   "T_core_final": 29.37,
+   "T_bath_final": 11.92,
+   "stratification_K": 3.79,
+   "energy_drift_pct": -0.039,
+   "dx_mm": 1.5,
+   "t_end": 360.0
+  },
+  {
+   "name": "creek 0.02 m/s",
+   "mode": "creek",
+   "U": 0.02,
+   "series": [
+    {
+     "t": 120.0,
+     "T_core": 34.13
+    },
+    {
+     "t": 240.0,
+     "T_core": 29.53
+    },
+    {
+     "t": 360.0,
+     "T_core": 25.81
+    }
+   ],
+   "T_core_final": 25.81,
+   "dx_mm": 1.5,
+   "t_end": 360.0
+  }
+ ],
+ "extra": {
+  "note": "field arrays lost to a filename bug; transient recovered from the run log"
+ }
+}
