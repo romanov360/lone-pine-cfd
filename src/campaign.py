@@ -155,13 +155,24 @@ def creek_study(Us=(0.0, 0.01, 0.02, 0.05, 0.10, 0.20), dx=1.2e-3,
 
 
 def head_to_head(dx=1.5e-3, t_end=360.0, k_eff_mult=5.0):
+    """
+    Same bottle, same mesh, same solver; only the boundary conditions differ.
+
+    The creek domain is shorter than it looks like it should be, on purpose.
+    Its top is a free surface (free-slip), so the bottle's warm plume spreads
+    along it as a gravity current with no wall friction to slow it down --
+    reaching ~0.19 m/s against the 0.03 m/s peak in the closed box, and
+    dragging the CFL-limited time step down with it. That is real physics, not
+    a numerical artefact, but it makes a long channel very expensive for what
+    it adds.
+    """
     print("D. Transient head-to-head, conjugate bottle, identical mesh")
     cases = [
         CFDCase("still box", mode="box", U=0.0, dx=dx, box_W=0.24, box_H=0.30,
                 t_end=t_end, k_eff_mult=k_eff_mult, record_every=2.0,
                 snapshots=(20.0, 120.0, 300.0)),
         CFDCase("creek 0.02 m/s", mode="creek", U=0.02, dx=dx, t_end=t_end,
-                up_D=3.0, down_D=8.0, half_H=0.15, k_eff_mult=k_eff_mult,
+                up_D=2.0, down_D=4.5, half_H=0.13, k_eff_mult=k_eff_mult,
                 record_every=2.0, snapshots=(20.0, 120.0, 300.0)),
     ]
     recs = []

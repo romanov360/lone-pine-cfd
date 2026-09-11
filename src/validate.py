@@ -171,9 +171,18 @@ def cylinder_flow(Re: float, D_cells: int = 40, Pr: float = 7.0,
     k = np.full((nx, ny), alpha)
     rho_cp = np.ones((nx, ny))
     # The cylinder is held at T = 1 every step (Solver.T_pin), which is what
-    # "isothermal cylinder" means. Its own k and rho*cp then only matter for
-    # the interface conductivity, so k is raised modestly.
+    # "isothermal cylinder" means. Its k must still be well above the fluid's,
+    # because the harmonic-mean face conductivity then tends to 2*k_fluid and
+    # the discrete flux becomes k_f*(T_wall - T_first)/(dx/2) -- the correct
+    # half-cell gradient. Leaving k_solid = k_fluid would halve every flux.
+    #
+    # rho*cp is raised by the same factor so the solid's DIFFUSIVITY matches
+    # the fluid's and does not drive the explicit diffusive step limit. Since
+    # the pin overwrites the solid temperature every step, its capacity has no
+    # physical effect here -- it is purely a numerical stabiliser. Raising k
+    # alone cut the time step by 50x and the benchmark simply stopped finishing.
     k[solid] = alpha * 50.0
+    rho_cp[solid] = 50.0
 
     mat = Materials(rho_cp=rho_cp, k=k, solid=solid, nu=nu, rho_f=1.0,
                     beta=0.0, T_ref=0.0, gravity=0.0)
@@ -282,7 +291,7 @@ if __name__ == "__main__":
         ]
         out["cylinder_refine"] = [
             cylinder_flow(40, D_cells=n, Pr=7.0, t_end_D=70, Lx_D=16, Ly_D=8)
-            for n in (16, 24, 36, 52)
+            for n in (16, 24, 36, 48)
         ]
         print()
 

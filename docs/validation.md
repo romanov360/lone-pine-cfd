@@ -91,26 +91,41 @@ is the question.
 
 The box case at four spacings, bottle held at 25 °C in 10 °C water:
 
-| Δx | grid | quasi-steady h | temporal scatter |
-|---|---|---|---|
-| 2.00 mm | 120 × 130 | 364.8 W/m²K | ± 5.5 |
-| 1.50 mm | 160 × 173 | 401.9 | ± 3.2 |
-| 1.00 mm | 240 × 260 | 413.1 | ± 8.8 |
-| 0.75 mm | 320 × 347 | 394.8 | ± 10.1 |
+| Δx | grid | quasi-steady h |
+|---|---|---|
+| 2.00 mm | 120 × 130 | 399.1 W/m²K |
+| 1.50 mm | 160 × 173 | 434.5 |
+| 1.00 mm | 240 × 260 | 443.9 |
+| 0.75 mm | 320 × 347 | 426.9 |
 
-Convergence is **not monotone**, so a formal Richardson extrapolation is not
-meaningful here and is not quoted as though it were. The reason is visible in
-the last column: at Ra ≈ 10⁹ the plume is genuinely unsteady, and the
-run-to-run scatter on the three finest grids (±3 to ±10 W/m²K, with excursions
-of 40) is as large as the differences between those grids.
+The three coarsest grids converge monotonically (Richardson on those three
+gives an observed order of 3.0 and a limit of 414 W/m²K, GCI 3.7 %), but the
+finest grid breaks the trend. **No asymptotic range has been established, so no
+extrapolated value is quoted as though one had been.**
+
+The reason is physical, not numerical. At Ra ≈ 10⁹ the plume is genuinely
+unsteady on timescales comparable to the 60 s averaging window, so successive
+runs differ by more than the discretisation does. Within any single run the
+signal is now very steady — the temporal scatter is ±2 to ±3 W/m²K once the
+bottle surface is properly pinned — but the *between-run* spread on the three
+finest grids is ±8.
 
 The defensible reading is that the 2.0 mm grid is under-resolved, and that on
-1.5 mm and finer the answer is **h = 403 ± 19 W/m²K** — roughly 20 % below the
+1.5 mm and finer the answer is **h = 435 ± 10 W/m²K** — about 16 % below the
 Churchill–Chu correlation's 520 W/m²K for the same conditions. That gap is not
 numerical error; §6 shows it is confinement.
 
-Energy conservation across all four runs is within 0.4 %, and max ∇·u stays at
-10⁻¹⁵.
+Max ∇·u stays at 10⁻¹⁵ throughout.
+
+> **A bug this table caught.** An earlier version of these runs approximated
+> the isothermal bottle by giving it a large conductivity *and* a very large
+> heat capacity. Those divide: the body's diffusivity ended up a thousand times
+> *below* the surrounding water's, its surface cells cooled faster than its
+> interior could resupply them, and every h came out low (402 instead of 435)
+> and noisy. The giveaway was in the cylinder benchmark, where it produced a
+> Nusselt number that fell with Reynolds number — impossible, and a symptom
+> that scaled with how much heat was being drawn off. The solver now pins the
+> body's temperature explicitly, which is what an isothermal boundary is.
 
 ## 6. A cross-check the correlations cannot give
 
@@ -119,10 +134,10 @@ but it explains the 20 % gap above and so belongs here:
 
 | box | side gap | h from CFD | vs correlation | bath warmed | top − bottom |
 |---|---|---|---|---|---|
-| 12 × 20 cm | 0.36 D | 191 ± 44 | 37 % | +7.0 K | +8.1 K |
-| 18 × 26 cm | 0.79 D | 340 ± 18 | 65 % | +3.1 K | +6.7 K |
-| 26 × 34 cm | 1.36 D | 365 ± 11 | 70 % | +1.5 K | +3.5 K |
-| 40 × 46 cm | 2.36 D | 346 ± 14 | 66 % | +0.7 K | +1.9 K |
+| 12 × 20 cm | 0.36 D | 323 ± 45 | 62 % | +7.7 K | +9.9 K |
+| 18 × 26 cm | 0.79 D | 419 ± 9 | 81 % | +3.4 K | +7.2 K |
+| 26 × 34 cm | 1.36 D | 444 ± 11 | 85 % | +1.7 K | +4.0 K |
+| 40 × 46 cm | 2.36 D | 445 ± 10 | 86 % | +0.8 K | +2.1 K |
 
 The correlation returns 520 W/m²K for all three, because it assumes an infinite
 quiescent medium and knows nothing about walls. A real box violates that
@@ -132,10 +147,13 @@ where the bottle is. Both effects shrink as the box grows, which is the trend
 the table shows in the last two columns: the bath warms ten times less in the
 largest box than the smallest, and the stratification falls from 8 K to 2 K.
 
-The film coefficient itself plateaus around 350–365 W/m²K once the side gap
-exceeds about one bottle diameter, which is about 30 % below the
-infinite-medium correlation. Part of that residual is the first-order wall-flux
-estimate discussed in §4; the rest is that even a 40 cm box is not infinite.
+The film coefficient plateaus cleanly at **445 W/m²K** once the side gap
+exceeds about one bottle diameter — the 26 cm and 40 cm boxes agree to within
+0.4 % — and collapses to 323 W/m²K when the gap closes to a third of a
+diameter. So confinement alone costs 27 % in a tight tub. The remaining 14 %
+between the plateau and the correlation's 520 W/m²K is the first-order
+wall-flux estimate discussed in §4, plus the fact that even a 40 cm box is not
+an infinite medium.
 The practical conclusion is unchanged either way, and is in fact strengthened:
 the still box is *worse* than its textbook correlation suggests, so the
 correlation-based comparison in the main study is conservative about the
