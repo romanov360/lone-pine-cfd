@@ -69,10 +69,10 @@ def main():
         Uo = 1.0 / (sp["R_total"] * B.A_outer)
         print(f"{nm:<24}{ho:9.0f}{sp['inside']*100:8.0f}%{sp['wall']*100:8.0f}%"
               f"{sp['outside']*100:8.0f}%{Uo:11.0f}")
-    print("\n  A 30x faster current multiplies the outside film coefficient by")
-    print("  about 7 and the overall U by 1.35. The glass wall and the water")
-    print("  inside the bottle are what actually limit the cooling, and the")
-    print("  creek cannot touch either of them.")
+    print("\n  Going from still water to a fast 1.5 m/s creek multiplies the")
+    print("  outside film coefficient by 9.2 -- and the overall U by 1.35. The")
+    print("  glass wall and the water inside the bottle are what actually limit")
+    print("  the cooling, and the creek cannot touch either of them.")
 
     head(3, "The effect that does dominate: a finite bath warms up")
     header()

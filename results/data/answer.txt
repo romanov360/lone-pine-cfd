@@ -1,0 +1,138 @@
+============================================================================
+WARM BOTTLE, COLD WATER: STILL BOX versus MOVING CREEK
+============================================================================
+500 mL glass bottle
+  outside      70 mm x 161 mm
+  wall         3.0 mm soda-lime glass  (k=1.05 W/m-K)
+  liquid       500 mL
+  wetted area  432 cm^2
+  C_liquid     2.08 kJ/K   C_shell 0.25 kJ/K   (11% in the glass)
+  R_wall       73.022 mK/W  -> equivalent h 317 W/m^2-K
+
+============================================================================
+1. The direct comparison, as asked
+============================================================================
+                                          ->25C    ->15C    ->12C   T@30min   T_final
+------------------------------------------------------------------------------------
+Still box, 20 L, at 10 C                  5.2 m   16.6 m   32.8 m   12.25 C   10.81 C
+Creek, 0.35 m/s, at 10 C                  3.7 m   10.7 m   17.9 m   10.57 C   10.00 C
+
+  The creek wins. It always wins. The interesting part is by how
+  little, and for what reason.
+
+============================================================================
+2. Why: where the resistance sits
+============================================================================
+                            h_out   inside     wall  outside  U overall
+still box                     466      29%      42%      29%        133
+creek 0.05 m/s                645      32%      46%      22%        145
+creek 0.35 m/s               1741      37%      53%      10%        169
+creek 1.50 m/s               4301      39%      56%       4%        179
+
+  Going from still water to a fast 1.5 m/s creek multiplies the
+  outside film coefficient by 9.2 -- and the overall U by 1.35. The
+  glass wall and the water inside the bottle are what actually limit
+  the cooling, and the creek cannot touch either of them.
+
+============================================================================
+3. The effect that does dominate: a finite bath warms up
+============================================================================
+                                          ->25C    ->15C    ->12C   T@30min   T_final
+------------------------------------------------------------------------------------
+Box, 2 L                                  5.9 m    never    never   17.09 C   16.52 C
+Box, 5 L                                  5.4 m   21.9 m    never   14.03 C   13.00 C
+Box, 20 L                                 5.2 m   16.6 m   32.8 m   12.25 C   10.81 C
+Box, 100 L                                5.1 m   15.8 m   27.9 m   11.74 C   10.17 C
+Box, infinite reservoir                   5.1 m   15.6 m   27.0 m   11.62 C   10.00 C
+
+  A 2 L box never reaches 15 C at all: it equilibrates at 16.5 C.
+  No current, however fast, rescues a bath that small -- and no box,
+  however large, catches a creek, because a creek is a bath of
+  infinite size AND a current at the same time.
+
+============================================================================
+4. How much of the creek's win is the current, and how much the size?
+============================================================================
+                                          ->25C    ->15C    ->12C   T@30min   T_final
+------------------------------------------------------------------------------------
+box 20 L, still                           5.2 m   16.6 m   32.8 m   12.25 C   10.81 C
+  + stir it at 0.35 m/s                   3.8 m   11.4 m   21.5 m   11.31 C   10.81 C
+  + make it infinite instead              5.1 m   15.6 m   27.0 m   11.62 C   10.00 C
+  + both = the creek                      3.7 m   10.7 m   17.9 m   10.57 C   10.00 C
+
+  Splitting the creek's advantage between its two causes, by box size
+  (the two shares overlap because the effects are not additive):
+
+     bath    still  stirred    creek   from current  from size
+      2 L    never    never   10.7 m            -- everything
+      5 L   21.9 m   14.9 m   10.7 m           63%        57%
+     10 L   17.9 m   12.3 m   10.7 m           78%        32%
+     20 L   16.6 m   11.4 m   10.7 m           88%        18%
+     50 L   16.0 m   11.0 m   10.7 m           95%         7%
+    200 L   15.7 m   10.8 m   10.7 m           99%         2%
+
+  At 200 L the creek's win is 99 % current and 2 % reservoir size.
+  At 5 L the two are comparable. At 2 L the box simply cannot get
+  there at any stirring rate, so reservoir size is the whole story.
+
+============================================================================
+5. Things that matter MORE than whether the water is moving
+============================================================================
+change from the baseline still box         ->15 C  speed-up
+-----------------------------------------------------------
+(baseline)                                 16.6 m     1.00x
+swap glass for aluminium (same box)        10.2 m     1.63x
+bath at 4 C instead of 10 C                10.5 m     1.59x
+move it to a 0.35 m/s creek                10.7 m     1.55x
+bubble air through the box (1% void)       11.8 m     1.41x
+use 250 mL instead of 500 mL               12.5 m     1.33x
+just stir the box by hand (0.1 m/s)        12.6 m     1.32x
+halve the wall to 1.5 mm                   13.6 m     1.22x
+swap glass for PET (same box)              36.2 m     0.46x
+
+============================================================================
+6. Oxygenation, the three separate questions
+============================================================================
+  (a) DISSOLVED oxygen, 0 -> 200 % of saturation:
+      change in h = -0.00104 %   -- irrelevant
+  (b) ENTRAINED bubbles, properties only (1 % void):
+      change in h = -1.71 %   -- a penalty
+  (c) ENTRAINED bubbles, agitation included:
+      still box        net  +178.6 %
+      creek 0.35 m/s   net    +8.0 %
+      creek 1.0 m/s    net    -0.4 %
+
+  Aeration helps by stirring, not by oxygenating, so it helps most
+  exactly where there was no stirring -- the still box.
+
+============================================================================
+7. The one case where the still box beats the creek
+============================================================================
+  Only by cheating on temperature. A box is a container you control;
+  a creek is whatever the creek happens to be.
+                                          ->25C    ->15C    ->12C   T@30min   T_final
+------------------------------------------------------------------------------------
+Box of ice water, pinned at 0 C           3.8 m    9.5 m   12.3 m    3.81 C    0.00 C
+Creek at 10 C, 0.35 m/s                   3.7 m   10.7 m   17.9 m   10.57 C   10.00 C
+Creek at 10 C, 2.5 m/s                    3.4 m   10.0 m   16.8 m   10.48 C   10.00 C
+
+  245 g of ice is enough to hold a 20 L box at 0 C through the whole
+  job, and that box then beats any creek in the world at 10 C.
+  Note the physics working against it though: near 4 C water has its
+  density maximum, so buoyancy almost switches off and the still
+  box's own natural convection collapses. See section 8.
+
+============================================================================
+8. The water density anomaly, which the still box cannot escape
+============================================================================
+    bath  surface   rho_bath   rho_surf   h_free
+    10.0     25.0    999.702    997.048      520
+    10.0     15.0    999.702    999.103      318
+     4.0     10.0    999.975    999.702      240
+     0.0      8.0    999.844    999.851       86
+     2.0      6.0    999.943    999.943       30
+
+  A surface at 6 C in a 2 C bath has essentially NO buoyancy to work
+  with -- the two densities are equal to six figures. Free convection
+  stops. A creek does not care: forced convection has no such hole.
+  This is why very cold still water underperforms its own reputation.
