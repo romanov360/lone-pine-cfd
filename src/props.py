@@ -305,6 +305,66 @@ NACL_EUTECTIC_W = 0.233
 NACL_EUTECTIC_T = -21.1
 
 
+@lru_cache(maxsize=4096)
+def _brine_freeze_cached(w_ppm: int, P: float) -> float:
+    return PropsSI("T_FREEZE", "T", 273.15, "P", P,
+                   f"INCOMP::MNA[{w_ppm / 1e6:.4f}]") - 273.15
+
+
+@lru_cache(maxsize=400_000)
+def _brine_cached(T_mK: int, w_ppm: int, P: float) -> Fluid:
+    T = T_mK / 1000.0          # absolute, K
+    w = w_ppm / 1e6
+    fluid = f"INCOMP::MNA[{w:.4f}]"
+    rho = PropsSI("D", "T", T, "P", P, fluid)
+
+    # Thermal expansion coefficient by finite difference. The incompressible
+    # backend does not expose beta, and it refuses any evaluation outside the
+    # solution's liquid range -- so right at the freezing point a centred
+    # stencil steps outside and throws. Pick the stencil that fits.
+    T_lo = _brine_freeze_cached(w_ppm, P) + 273.15
+    T_hi = 313.15
+    dT = 0.5
+    if T - dT <= T_lo:
+        a, b_ = T, min(T + 2 * dT, T_hi)
+    elif T + dT >= T_hi:
+        a, b_ = max(T - 2 * dT, T_lo), T
+    else:
+        a, b_ = T - dT, T + dT
+    rho_a = PropsSI("D", "T", a, "P", P, fluid)
+    rho_b = PropsSI("D", "T", b_, "P", P, fluid)
+    beta = -(rho_b - rho_a) / (b_ - a) / rho
+
+    return Fluid(
+        T=T, rho=rho,
+        cp=PropsSI("C", "T", T, "P", P, fluid),
+        k=PropsSI("L", "T", T, "P", P, fluid),
+        mu=PropsSI("V", "T", T, "P", P, fluid),
+        beta=beta,
+    )
+
+
+def brine_freeze_C(w: float, P: float = P_ATM) -> float:
+    """
+    CoolProp's own freezing temperature for the NaCl solution, degrees C.
+
+    This is the backend's validity limit, so it is what the property calls
+    have to respect. It agrees with the tabulated liquidus above to a few
+    tenths of a kelvin, which is a useful cross-check on both.
+    """
+    w = min(max(w, 1e-4), 0.23)
+    return _brine_freeze_cached(int(round(w * 1e6)), P)
+
+
+# CoolProp's NaCl solution is correlated over 173.15-313.15 K.
+_BRINE_T_MAX_C = 313.15 - 273.15 - 0.02
+
+
+def _brine_T(T_C: float, w: float, P: float) -> float:
+    """Clamp to just inside CoolProp's valid range for this solution."""
+    return min(max(T_C, brine_freeze_C(w, P) + 0.02), _BRINE_T_MAX_C)
+
+
 def brine_nacl(T_C: float, w: float = 0.23, P: float = P_ATM) -> Fluid:
     """
     Aqueous NaCl brine properties from CoolProp's incompressible solutions.
@@ -315,30 +375,18 @@ def brine_nacl(T_C: float, w: float = 0.23, P: float = P_ATM) -> Fluid:
     conductivity is 11 % lower, both of which work against the film
     coefficient. The bath wins on temperature, not on transport.
     """
-    T = T_C + 273.15
     # CoolProp's NaCl solution is correlated to 23 wt%, which is essentially
-    # the eutectic (23.3 wt%); clamp rather than extrapolate.
+    # the eutectic (23.3 wt%); clamp rather than extrapolate. Quantised to
+    # 1 mK and 1 ppm so the lookup can be cached -- the transient solvers call
+    # this millions of times and an uncached CoolProp incompressible-solution
+    # call is slow enough to stall the ODE integrator outright.
     w = min(max(w, 1e-4), 0.23)
-    fluid = f"INCOMP::MNA[{w:.4f}]"
-    rho = PropsSI("D", "T", T, "P", P, fluid)
-    # Expansion coefficient by central difference -- the incompressible
-    # backend does not expose it directly.
-    dT = 0.5
-    rho_hi = PropsSI("D", "T", T + dT, "P", P, fluid)
-    rho_lo = PropsSI("D", "T", T - dT, "P", P, fluid)
-    beta = -(rho_hi - rho_lo) / (2.0 * dT) / rho
-    return Fluid(
-        T=T, rho=rho,
-        cp=PropsSI("C", "T", T, "P", P, fluid),
-        k=PropsSI("L", "T", T, "P", P, fluid),
-        mu=PropsSI("V", "T", T, "P", P, fluid),
-        beta=beta,
-    )
+    T_mK = int(round((_brine_T(T_C, w, P) + 273.15) * 1000.0))
+    return _brine_cached(T_mK, int(round(w * 1e6)), P)
 
 
 def brine_rho(T_C: float, w: float, P: float = P_ATM) -> float:
-    w = min(max(w, 1e-4), 0.23)
-    return PropsSI("D", "T", T_C + 273.15, "P", P, f"INCOMP::MNA[{w:.4f}]")
+    return brine_nacl(T_C, w, P).rho
 
 
 # ---------------------------------------------------------------------------
