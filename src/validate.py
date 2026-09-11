@@ -235,7 +235,9 @@ def cylinder_flow(Re: float, D_cells: int = 40, Pr: float = 7.0,
         print(f"    Re={Re:6.0f} Pr={Pr:4.1f}  {nx}x{ny}  D/dx={D_cells}  "
               f"Lr/D={Lr:5.2f}  St={St:6.4f}  Nu={Nu:7.2f}  "
               f"Nu_CB={Nu_cb:7.2f}  ({(Nu/Nu_cb-1)*100:+6.1f} %)")
-    return {"Re": Re, "Pr": Pr, "Lr_over_D": float(Lr), "St": float(St),
+    return {"Re": Re, "Pr": Pr, "D_cells": int(D_cells), "nx": nx, "ny": ny,
+            "dx_over_D": float(dx / D),
+            "Lr_over_D": float(Lr), "St": float(St),
             "Nu": Nu, "Nu_ChurchillBernstein": float(Nu_cb),
             "Nu_error_pct": float((Nu / Nu_cb - 1) * 100),
             "probe_t": t_hist.tolist()[-400:], "probe_v": v_hist.tolist()[-400:]}

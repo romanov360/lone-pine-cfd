@@ -531,7 +531,11 @@ ul.notes li{margin-bottom:.5em;}
       <tbody id="valbody"></tbody></table></div>
     <p class="foot">The heated-cavity agreement matters most here: it is the same physics as a
     bottle shedding a buoyant plume into a closed box, and it lands within 0.73 % across three
-    decades of Rayleigh number.</p>
+    decades of Rayleigh number. The last row is the one honest caveat made quantitative
+    &mdash; at water's Prandtl number the thermal boundary layer is thin enough that the
+    wall-flux estimate needs a fine mesh. Refining it four times gives clean first-order
+    convergence (p = 0.99, which is exactly what a staircase boundary should give) and
+    extrapolates to within 2.6 % of the correlation.</p>
   </div>
   <div class="col">
     <p>Grid convergence was run on the box case at four spacings from 2.0 down to 0.75 mm. The
@@ -835,6 +839,12 @@ function lineChart(el, opt){
       'Churchill &amp; Bernstein (1977)', 'Nu within '+nus+' %']);
     rows.push(['Cylinder wake, Re 40','immersed-boundary geometry','Coutanceau &amp; Bouard (1977)',
       'recirculation '+c.Lr_over_D.toFixed(2)+' D vs 2.2 D']);
+    if(D.val_cyl.cylinder_refine){
+      const r = D.val_cyl.cylinder_refine.slice().sort((a,b)=>a.D_cells-b.D_cells);
+      rows.push(['Cylinder at Pr = 7, mesh refinement','wall heat flux',
+        'four grids, 16 &rarr; 48 cells per diameter',
+        r.map(x=>(x.Nu_error_pct>0?'+':'')+x.Nu_error_pct.toFixed(1)).join(' &rarr; ')+' %']);
+    }
   }
   document.getElementById('valbody').innerHTML = rows.map(r =>
     `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td class="n">${r[3]}</td></tr>`).join('');

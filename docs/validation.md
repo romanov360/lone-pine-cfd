@@ -62,11 +62,11 @@ a current.
 **Heat transfer.** With the cylinder held isothermal, against Churchill &
 Bernstein (1977) at Pr = 0.7 and D/Δx = 24:
 
-| Reynolds number | Nu (this solver) | Nu (correlation) | error |
-|---|---|---|---|
-| 40 | 3.43 | 3.36 | **+2.0 %** |
-| 100 | 5.13 | 5.16 | **−0.5 %** |
-| 200 | 7.06 | 7.19 | **−1.8 %** |
+| Reynolds number | grid | Nu (this solver) | Nu (correlation) | error |
+|---|---|---|---|---|
+| 40 | 432 × 216 | 3.43 | 3.36 | **+2.0 %** |
+| 100 | 480 × 240 | 5.13 | 5.16 | **−0.5 %** |
+| 200 | 560 × 280 | 7.06 | 7.19 | **−1.8 %** |
 
 Within two percent across the range — comfortably inside the correlation's own
 scatter, and the trend with Reynolds number is now the right sign.
@@ -76,18 +76,27 @@ thinner than its momentum layer by roughly Pr^(1/3) ≈ 1.9 and needs a finer
 mesh for the same accuracy. A refinement sequence at Re = 40 shows the error
 shrinking as it should:
 
-| D/Δx | Nu | error vs correlation |
-|---|---|---|
-| 16 | 8.72 | +15.2 % |
-| 24 | 8.24 | +8.9 % |
-| 36 | 7.96 | +5.1 % |
+| D/Δx | grid | Nu | error vs correlation |
+|---|---|---|---|
+| 16 | 256 × 128 | 8.72 | +15.2 % |
+| 24 | 384 × 192 | 8.24 | +8.9 % |
+| 36 | 576 × 288 | 7.96 | +5.1 % |
+| 48 | 768 × 384 | 7.81 | **+3.2 %** |
 
-Monotone, and roughly halving for each 1.5× refinement.
+Monotone throughout. Richardson extrapolation on the three finest grids gives
+an **observed order of p = 0.99** and a limiting value of **Nu = 7.37**, which
+is **−2.6 %** from the correlation — the same accuracy the Pr = 0.7 cases reach
+directly.
 
-This is the practical reason the study's water-side forced-convection numbers
-come from correlations rather than from the CFD: getting Pr = 7 cross-flow to
-correlation accuracy costs a mesh that is not worth buying when experimental
-fits are available and already good.
+Two things follow. First, the Pr = 7 discrepancy was entirely a resolution
+effect, and it has now been quantified and extrapolated away rather than
+argued away. Second, first order is exactly what should be expected: the wall
+heat flux is a linear gradient taken over half a cell against a staircase
+immersed boundary, and that construction is first-order accurate. Getting
+Pr = 7 cross-flow to correlation accuracy *directly* therefore costs a mesh
+that is not worth buying when experimental fits are available and already
+good — which is the practical reason the study's water-side forced-convection
+numbers come from correlations rather than from the CFD.
 
 **Wake geometry.** At Re = 40 the flow is steady with a closed recirculation
 bubble, established at L/D ≈ 2.2 (Coutanceau & Bouard, *J. Fluid Mech.* **79**,
