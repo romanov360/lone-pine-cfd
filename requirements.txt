@@ -1,0 +1,8 @@
+numpy>=2.0
+scipy>=1.14
+matplotlib>=3.8
+fipy>=4.0
+py-pde>=0.58
+ht>=1.2
+fluids>=1.3
+CoolProp>=8.0
