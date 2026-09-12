@@ -205,6 +205,10 @@ svg.chart text.axt{font-size:11px; fill:var(--ink-2);}
 svg.chart .gl{stroke:var(--line); stroke-width:1;}
 svg.chart .ax{stroke:var(--line-2); stroke-width:1;}
 
+.two{display:grid; grid-template-columns:1fr 1fr; gap:26px;}
+@media (max-width:620px){ .two{grid-template-columns:1fr;} }
+h4{font-family:"IBM Plex Serif", Georgia, serif; font-size:.93rem; font-weight:600;
+   margin:0 0 10px; color:var(--ink);}
 footer{margin-top:68px; padding-top:26px; border-top:1px solid var(--line);
   font-size:.82rem; color:var(--ink-3);}
 footer p{color:var(--ink-3); font-size:.82rem;}
@@ -559,6 +563,138 @@ ul.notes li{margin-bottom:.5em;}
 
 <section>
   <div class="shead col">
+    <div class="tagrow"><span class="tag trans">Transient model</span><span class="tag cfd">CFD</span></div>
+    <h2>Turning it around: when does the box win?</h2>
+  </div>
+  <div class="col">
+    <p>Everything above blends free and forced convection with Churchill's rule,
+    <span class="num">h = (h<sub>forced</sub><sup>n</sup> + h<sub>free</sub><sup>n</sup>)<sup>1/n</sup></span>,
+    which is bounded below by the still-water limit at any velocity. So at equal bath
+    temperature, with an unlimited bath and a current transverse to the plume, the creek
+    <em>cannot</em> lose. That is a property of the model, not a finding &mdash; and it means
+    every genuine box win has to break one of those three assumptions.</p>
+    <p>There are five ways to do it, and they are wildly unequal.</p>
+  </div>
+  <div class="fig">
+    <h3>The exchange rate: how much colder must a still bath be?</h3>
+    <p class="cap">To match a creek at 10 &deg;C on time-to-target. This is the single most
+    useful number in the inverse problem.</p>
+    <div class="scroll"><table id="xrate"><thead><tr>
+      <th>Creek speed</th><th>to reach 25 &deg;C</th><th>to reach 20 &deg;C</th>
+      <th>to reach 15 &deg;C</th></tr></thead><tbody></tbody></table></div>
+    <p class="foot">Two to eleven kelvin. Swapping tap water for fridge water &mdash;
+    10 &deg;C to 4 &deg;C, six kelvin &mdash; is worth about as much as finding a brisk creek.
+    Note the trend <em>reverses</em> with target: the deeper you cool, the less temperature
+    advantage the box needs, because the last few degrees are governed by the bath temperature
+    itself rather than by how fast heat crosses the film.</p>
+  </div>
+  <div class="fig">
+    <h3>The cold-bath ladder</h3>
+    <p class="cap">A 10 &deg;C creek cannot reach 10 &deg;C at any velocity &mdash; that
+    <em>is</em> its temperature. Everything from the ice bath down goes somewhere no creek at
+    10 &deg;C can follow.</p>
+    <div class="scroll"><table id="ladder"><thead><tr>
+      <th>Bath</th><th>&rarr; 25 &deg;C</th><th>&rarr; 15 &deg;C</th><th>&rarr; 10 &deg;C</th>
+      <th>&rarr; 5 &deg;C</th><th>&rarr; 1 &deg;C</th><th>freeze margin</th>
+      </tr></thead><tbody></tbody></table></div>
+    <p class="foot">A salt-ice bath reaches 1 &deg;C in under ten minutes while sitting
+    perfectly still in a bucket, with hours of margin before the contents freeze solid
+    &mdash; freezing 500 mL takes 167 kJ against roughly 2.1 kJ per kelvin of sensible heat,
+    so the latent plateau dwarfs the cooling that preceded it. The pinned-temperature
+    assumption is physical here for a specific reason: a salt-<em>ice</em> bath is a slurry,
+    and ice melting next to the bottle holds the bath at its liquidus however hard the bottle
+    pushes.</p>
+  </div>
+  <div class="fig">
+    <h3>Everything that shrinks the creek's advantage</h3>
+    <p class="cap">Free convection is nearly size-independent and grows as
+    &Delta;T<sup>1/3</sup>; forced convection falls as D<sup>&minus;1/2</sup> and does not
+    scale with &Delta;T at all. Big bottles and hot bottles both close the gap.</p>
+    <div class="scroll"><table id="levertable"><thead><tr>
+      <th>Condition</th><th style="text-transform:none">h free</th>
+      <th style="text-transform:none">h with the current</th>
+      <th>creek's advantage</th></tr></thead><tbody></tbody></table></div>
+    <p class="foot">A big hot drum drives its own plume hard enough that a current adds
+    little; a small tepid vial has almost no plume and the current is worth everything.</p>
+  </div>
+  <div class="callout">
+    <span class="eyebrow">The one direction where a current hurts</span>
+    <p>A bottle in a downwelling &mdash; the throat of a plunge pool &mdash; meets water
+    moving <em>down</em> past a plume trying to rise, and the two subtract. Near
+    <b class="num">0.03 m/s</b> they very nearly cancel: the film coefficient falls to
+    <b class="num">251 W/m&sup2;K</b> against still water's <b class="num">466</b>. It is the
+    only configuration in this whole study where moving water is a liability. Treat the depth
+    of the dip with caution &mdash; the asymptotic blend is least reliable exactly at the
+    crossover it is predicting &mdash; but the sign is a well-documented effect.</p>
+  </div>
+  <div class="fig">
+    <h3>Two things you can actually do to the box</h3>
+    <p class="cap">Both from CFD, bottle held isothermal at 25 &deg;C in 10 &deg;C water.</p>
+    <div class="two">
+      <div>
+        <h4>Keep it off the top</h4>
+        <div class="scroll"><table id="placetable"><thead><tr>
+          <th>Bottle height</th><th style="text-transform:none">h, W/m&sup2;K</th>
+          <th>stratification</th></tr></thead>
+          <tbody></tbody></table></div>
+      </div>
+      <div>
+        <h4>Give it room, then stop caring</h4>
+        <div class="scroll"><table id="asptable"><thead><tr>
+          <th>Box</th><th>side gap</th><th>head room</th>
+          <th style="text-transform:none">h, W/m&sup2;K</th></tr></thead>
+          <tbody></tbody></table></div>
+      </div>
+    </div>
+    <p class="foot">Putting the bottle high in the box costs 25 %, because the warm layer it
+    builds itself collects at the top and it ends up sitting in 9.3 K of its own
+    stratification instead of 2. Putting it <em>low</em> buys nothing over the centre. Shape
+    at constant volume is a threshold rather than an optimum: about one bottle diameter of
+    side clearance and a fifth of a bottle height above it, after which only volume
+    matters.</p>
+  </div>
+  <div class="col">
+    <h3 style="margin-top:34px">And four things that are not about the outside at all</h3>
+    <p>The largest single sensitivity in this problem is none of the things the question
+    asked about. It is whether the water <em>inside</em> the bottle is circulating: going
+    from a sealed bottle standing still to perfectly stirred is worth
+    <b class="num">1.7&times;</b> on the overall conductance, against the
+    <b class="num">1.35&times;</b> the fastest imaginable current buys on the outside film.
+    So a creek has a second advantage the main comparison never counted &mdash; it does not
+    only flow past the bottle, it knocks it about. A bottle wedged still in a creek gets the
+    film gain only; one rolling along the bed gets both, and the second is the bigger.</p>
+    <ul class="notes">
+      <li><b>Fill level barely matters.</b> Emptying halfway removes half the water but also
+      un-wets half the wall, and the headspace behind it is nearly a perfect insulator. Half
+      the heat, half the conductance, same time constant.</li>
+      <li><b>Contents are decided by viscosity.</b> Water, beer and milk all convect freely
+      inside and behave alike. Oil, soup and honey have Rayleigh numbers too low to convect
+      at all, cool by conduction, and take up to three times longer whatever is happening
+      outside. For honey the whole question is moot.</li>
+      <li><b>A wet cloth in the wind loses.</b> Evaporation carries six or seven times the
+      sensible load, but an 8 m/s gale still reaches only 329 W/m&sup2;K &mdash; short of a
+      bucket of <em>still</em> water and five times short of a creek. It also cannot go below
+      the wet-bulb temperature, 13.8 &deg;C here, which is above the creek to begin with.</li>
+      <li><b>Shelter erodes but never reverses.</b> A bottle behind a rock feels a fraction of
+      the nominal current, cutting the creek's edge from 1.55&times; to 1.07&times; &mdash;
+      but a zero-velocity creek is still an infinite bath, and that alone beats a 20 L one.</li>
+    </ul>
+  </div>
+  <div class="callout blue">
+    <span class="eyebrow">The verdict, inverted</span>
+    <p>The box wins whenever you use the one thing it has that a creek does not: <b>you
+    choose what is in it.</b> Ice water at 0 &deg;C beats any 10 &deg;C creek outright at any
+    velocity, and 245 g of ice holds a 20 L box there for the whole job. Salt and ice takes it
+    to &minus;21 &deg;C and reaches 1 &deg;C in under ten minutes. A warm summer creek loses
+    to a bucket of tap water.</p>
+    <p>The box loses whenever the comparison is made at equal temperature with an unlimited
+    bath, because then the only thing left to compete on is the flow field &mdash; and a still
+    box has none.</p>
+  </div>
+</section>
+
+<section>
+  <div class="shead col">
     <div class="tagrow"><span class="tag">Limits</span></div>
     <h2>What this does not settle</h2>
   </div>
@@ -885,6 +1021,90 @@ function lineChart(el, opt){
       <td class="n">${Math.round(r.h_correlation)}</td>
       <td class="n">${ratio.toFixed(2)}&times;</td></tr>`;
   }).join('');
+})();
+
+/* ---------- inverse study: exchange rate ---------- */
+(function(){
+  const tb = document.querySelector('#xrate tbody');
+  if(!tb || !D.inverse) return;
+  const rows = D.inverse.crossover;
+  const Us = [...new Set(rows.map(r=>r.U))].sort((a,b)=>a-b);
+  tb.innerHTML = Us.map(U => {
+    const cell = t => {
+      const r = rows.find(x => x.U === U && x.target === t);
+      return r && r.advantage_K != null
+        ? `<td class="n">${r.advantage_K.toFixed(1)} K colder</td>`
+        : '<td class="n">&mdash;</td>';
+    };
+    return `<tr><td>${U} m/s</td>${cell(25)}${cell(20)}${cell(15)}</tr>`;
+  }).join('');
+})();
+
+/* ---------- inverse study: cold-bath ladder ---------- */
+(function(){
+  const tb = document.querySelector('#ladder tbody');
+  if(!tb || !D.inverse) return;
+  tb.innerHTML = D.inverse.ladder.map(r => {
+    const cell = k => r[k] == null
+      ? '<td class="never">never</td>'
+      : `<td class="n">${fmtT(r[k])}</td>`;
+    const fz = r.freeze_through == null ? '&mdash;'
+      : (r.freeze_through/3600).toFixed(1) + ' h';
+    const hi = r.T_bath < 0 || r.T_bath === 0 ? ' class="hi"' : '';
+    return `<tr${hi}><td>${r.name}</td>${cell('t_25')}${cell('t_15')}
+      ${cell('t_10')}${cell('t_5')}${cell('t_1')}<td class="n">${fz}</td></tr>`;
+  }).join('');
+})();
+
+/* ---------- inverse study: levers ---------- */
+(function(){
+  const tb = document.querySelector('#levertable tbody');
+  if(!tb || !D.inverse) return;
+  const out = [];
+  D.inverse.size.forEach(r => {
+    const v = r.V_litre;
+    out.push([v < 1 ? `${(v*1000).toFixed(0)} mL bottle` : `${v.toFixed(1)} L bottle`,
+              r.h_free, r.h_mixed, r.ratio]);
+  });
+  D.inverse.drive.forEach(r => {
+    out.push([`bottle at ${r.T_bottle.toFixed(0)} \u00b0C`, r.h_free, r.h_mixed, r.ratio]);
+  });
+  tb.innerHTML = out.map(([n, hf, hm, ratio], i) => {
+    const edge = i === 0 || i === D.inverse.size.length ? '' : '';
+    const strong = (ratio === Math.max(...out.map(o=>o[3])) ||
+                    ratio === Math.min(...out.map(o=>o[3])));
+    const v = strong ? `<b>${ratio.toFixed(2)}&times;</b>` : `${ratio.toFixed(2)}&times;`;
+    return `<tr><td>${n}</td><td class="n">${Math.round(hf)}</td>
+      <td class="n">${Math.round(hm)}</td><td class="n">${v}</td></tr>`;
+  }).join('');
+})();
+
+/* ---------- inverse study: box design ---------- */
+(function(){
+  const tb = document.querySelector('#placetable tbody');
+  if(tb && D.cfd_placement){
+    tb.innerHTML = D.cfd_placement.records.map(r => {
+      const off = r.y_offset;
+      const lab = off === 0 ? 'centre'
+        : `${Math.abs(off*100).toFixed(0)}% ${off < 0 ? 'below' : 'above'}`;
+      const strat = r.T_bath_top_final - r.T_bath_bot_final;
+      const worst = off === 0.30;
+      const h = worst ? `<b>${Math.round(r.h_quasi_steady)}</b>`
+                      : Math.round(r.h_quasi_steady);
+      return `<tr${worst?' class="hi"':''}><td>${lab}</td>
+        <td class="n">${h} &plusmn; ${Math.round(r.h_std)}</td>
+        <td class="n">+${strat.toFixed(1)} K</td></tr>`;
+    }).join('');
+  }
+  const tb2 = document.querySelector('#asptable tbody');
+  if(tb2 && D.cfd_aspect){
+    tb2.innerHTML = D.cfd_aspect.records.map(r => `<tr>
+      <td>${(r.W*100).toFixed(0)}&times;${(r.H*100).toFixed(0)} cm</td>
+      <td class="n">${r.side_gap_D.toFixed(2)} D</td>
+      <td class="n">${r.head_room_H.toFixed(2)} H</td>
+      <td class="n">${Math.round(r.h_quasi_steady)} &plusmn; ${Math.round(r.h_std)}</td>
+      </tr>`).join('');
+  }
 })();
 
 /* ---------- anomaly table ---------- */

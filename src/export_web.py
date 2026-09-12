@@ -186,6 +186,40 @@ for tag in ("cavity", "heated", "cyl"):
     if os.path.exists(path):
         out[f"val_{tag}"] = json.load(open(path))
 
+# --- 12. The inverse study: when does the box win? ---------------------
+import box_wins as bw
+import other_factors as of
+from props import brine_freeze_C
+
+out["inverse"] = {
+    "crossover": [
+        {k: (None if isinstance(v, float) and not np.isfinite(v) else v)
+         for k, v in r.items()} for r in bw.temperature_crossover()],
+    "ladder": [
+        {k: (None if isinstance(v, float) and not np.isfinite(v) else v)
+         for k, v in r.items()} for r in bw.cold_bath_ladder()],
+    "shelter": bw.shelter_sweep()[0],
+    "shelter_box_t15": bw.shelter_sweep()[1],
+    "opposed": bw.opposed_flow(),
+    "size": bw.size_scaling(),
+    "drive": bw.drive_scaling(),
+    "horizon": bw.time_horizon(),
+}
+out["other"] = {
+    "mixing": of.internal_mixing(),
+    "fill": of.fill_level(),
+    "contents": of.contents_sweep(),
+    "evaporative": of.evaporative(),
+    "wet_bulb": of.wet_bulb(),
+}
+for tag in ("placement", "aspect"):
+    path = f"results/data/cfd_{tag}.json"
+    if os.path.exists(path):
+        d = json.load(open(path))
+        for r in d["records"]:
+            r.pop("series", None)
+        out[f"cfd_{tag}"] = d
+
 json.dump(out, open("results/data/web.json", "w"), default=float)
 print("written results/data/web.json",
       f"({len(json.dumps(out, default=float))/1024:.0f} kB)")
