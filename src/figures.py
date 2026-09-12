@@ -561,6 +561,186 @@ def fig_fields():
     return save(fig, "09_fields")
 
 
+def fig_cold_bath():
+    """Where the box overtakes: cooling curves and the temperature exchange rate."""
+    import sys
+    sys.path.insert(0, "src")
+    from box_wins import temperature_crossover
+    from lumped import Scenario, simulate
+    from props import brine_freeze_C
+
+    fig, (ax, ax2) = plt.subplots(1, 2, figsize=(11.4, 4.5))
+
+    runs = [
+        ("Creek, 0.35 m/s at 10 $^\\circ$C", dict(U=0.35, bath_volume=None),
+         ORANGE, "-", 2.4),
+        ("Still box, tap water 10 $^\\circ$C", dict(U=0.0, bath_volume=0.020),
+         BLUE, "--", 1.8),
+        ("Still box, fridge water 4 $^\\circ$C",
+         dict(U=0.0, bath_volume=0.020, T_bath_0=4.0), AQUA, "-", 1.8),
+        ("Ice-water bath, 0 $^\\circ$C",
+         dict(U=0.0, bath_volume=None, T_bath_0=0.0), VIOLET, "-", 2.0),
+        ("Salt-ice bath, $-$20.5 $^\\circ$C",
+         dict(U=0.0, bath_volume=None, T_bath_0=brine_freeze_C(0.23) + 0.05,
+              bath_kind="brine", brine_w=0.23), MAGENTA, "-", 2.4),
+    ]
+    for name, kw, c, ls, lw in runs:
+        sub = kw.get("T_bath_0", 10.0) < 0
+        r = simulate(Scenario(name, **kw), t_end=2400,
+                     stop_at=0.4 if sub else None)
+        ax.plot(r["t"], r["T_bottle"], color=c, ls=ls, lw=lw, label=name,
+                zorder=3)
+    ax.axhline(10, color=INK3, lw=1, ls=(0, (4, 3)), zorder=1)
+    ax.text(120, 10.8, "no 10 $^\\circ$C creek can cross this line",
+            fontsize=8.5, color=INK3, va="bottom")
+    ax.set_xlim(0, 2400); ax.set_ylim(-1, 41)
+    ax.set_xticks(np.arange(0, 2401, 300))
+    _minutes(ax)
+    _style(ax, xlabel="time (minutes)",
+           ylabel="bottle temperature ($^\\circ$C)",
+           title="Below 10 $^\\circ$C the creek simply cannot go")
+    ax.legend(loc="upper right", fontsize=8.6)
+
+    rows = temperature_crossover()
+    for target, c, m in ((25.0, VIOLET, "o"), (20.0, AQUA, "s"),
+                         (15.0, ORANGE, "^")):
+        sel = [r for r in rows if r["target"] == target
+               and r["advantage_K"] is not None]
+        ax2.plot([r["U"] for r in sel], [r["advantage_K"] for r in sel],
+                 m + "-", color=c, ms=6, zorder=3,
+                 label=f"cooling to {target:g} $^\\circ$C")
+    ax2.axhspan(5.5, 6.5, color=BLUE, alpha=0.13, lw=0, zorder=2)
+    ax2.text(0.055, 6.0, "tap water $\\to$ fridge water", fontsize=8.4,
+             color=BLUE, va="center")
+    ax2.set_xscale("log")
+    ax2.set_xlim(0.04, 3)
+    ax2.set_xticks([0.05, 0.1, 0.2, 0.5, 1.0, 2.0])
+    ax2.set_xticklabels(["0.05", "0.1", "0.2", "0.5", "1.0", "2.0"])
+    ax2.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
+    ax2.tick_params(axis="x", which="minor", length=0)
+    _style(ax2, xlabel="creek velocity (m/s)",
+           ylabel="how much colder the still bath must be (K)",
+           title="The exchange rate: kelvin bought per metre per second",
+           grid="both")
+    ax2.legend(loc="lower right", fontsize=8.6)
+    fig.subplots_adjust(wspace=0.28)
+    return save(fig, "10_cold_bath")
+
+
+def fig_levers():
+    """Every condition tested, ranked by how much of the creek's edge survives."""
+    import sys
+    sys.path.insert(0, "src")
+    from box_wins import drive_scaling, opposed_flow, shelter_sweep, size_scaling
+
+    rows = []
+    for r in size_scaling():
+        v = r["V_litre"]
+        label = f"{v*1000:.0f} mL bottle" if v < 1 else f"{v:.1f} L bottle"
+        rows.append((label, r["ratio"], "size"))
+    for r in drive_scaling():
+        rows.append((f"bottle at {r['T_bottle']:.0f} $^\\circ$C", r["ratio"],
+                     "drive"))
+    sh, _ = shelter_sweep()
+    for r in sh:
+        rows.append((f"{r['shelter']*100:.0f}% shelter", r["vs_box"], "shelter"))
+    op = opposed_flow()
+    worst = min(op, key=lambda r: r["opposing"])
+    rows.append((f"opposed flow, {worst['U']:.2g} m/s",
+                 worst["opposing"] / worst["h_free"], "opposed"))
+
+    colours = {"size": VIOLET, "drive": ORANGE, "shelter": AQUA,
+               "opposed": RED}
+    labels = {"size": "bottle size", "drive": "how hot the bottle is",
+              "shelter": "shelter from the current",
+              "opposed": "current opposing the plume"}
+
+    fig, ax = plt.subplots(figsize=(8.6, 6.2))
+    y = np.arange(len(rows))[::-1]
+    for yy, (name, val, kind) in zip(y, rows):
+        ax.plot([1, val], [yy, yy], color=colours[kind], lw=1.4, alpha=0.5,
+                zorder=2)
+        ax.plot(val, yy, "o", color=colours[kind], ms=7, zorder=4,
+                mec=SURF, mew=1.2)
+    ax.axvline(1, color=INK, lw=1.4, zorder=3)
+    ax.set_yticks(y)
+    ax.set_yticklabels([r[0] for r in rows], fontsize=9)
+    ax.set_xscale("log")
+    ax.set_xlim(0.45, 9)
+    ax.set_xticks([0.5, 1, 2, 3, 5, 8])
+    ax.set_xticklabels(["0.5x", "1x\n(still box)", "2x", "3x", "5x", "8x"])
+    ax.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
+    ax.tick_params(axis="x", which="minor", length=0)
+    handles = [plt.Line2D([], [], marker="o", ls="-", color=colours[k], ms=7,
+                          label=labels[k]) for k in colours]
+    ax.legend(handles=handles, loc="center right", fontsize=8.8,
+              bbox_to_anchor=(1.0, 0.42))
+    _style(ax, xlabel="how much better the creek is than a still box",
+           title="Everything that shrinks the creek's advantage",
+           grid="x")
+    ax.text(0.97, -0.5, "current makes it WORSE", fontsize=8.6, color=RED,
+            va="center", ha="right")
+    ax.set_ylim(-1.4, len(rows) - 0.4)
+    return save(fig, "11_levers")
+
+
+def fig_box_design():
+    """What the CFD says about building a better box."""
+    try:
+        pl = json.load(open("results/data/cfd_placement.json"))["records"]
+        asp = json.load(open("results/data/cfd_aspect.json"))["records"]
+    except FileNotFoundError:
+        return None
+    fig, (ax, ax2) = plt.subplots(1, 2, figsize=(11.4, 4.4))
+
+    off = np.array([r["y_offset"] for r in pl])
+    h = np.array([r["h_quasi_steady"] for r in pl])
+    sd = np.array([r["h_std"] for r in pl])
+    strat = np.array([r["T_bath_top_final"] - r["T_bath_bot_final"] for r in pl])
+    ax.errorbar(off * 100, h, yerr=sd, fmt="o-", color=BLUE, ms=7, capsize=4,
+                elinewidth=1.4, zorder=4)
+    ax.set_xlabel("bottle height in the box (% of box height from centre)")
+    axb = ax.twinx()
+    axb.plot(off * 100, strat, "s--", color=ORANGE, ms=6, zorder=3,
+             label="stratification it sits in")
+    axb.set_ylabel("top $-$ bottom of the bath (K)", color=ORANGE)
+    axb.tick_params(axis="y", colors=ORANGE)
+    axb.spines["top"].set_visible(False)
+    axb.grid(False)
+    _style(ax, ylabel="$h$ (W/m$^2$K)",
+           title="Keep the bottle off the top of the box")
+    ax.set_ylim(300, 490)
+    handles = [plt.Line2D([], [], marker="o", ls="-", color=BLUE, ms=7,
+                          label="film coefficient"),
+               plt.Line2D([], [], marker="s", ls="--", color=ORANGE, ms=6,
+                          label="stratification it sits in")]
+    ax.legend(handles=handles, loc="lower left", fontsize=8.6)
+
+    gap = np.array([r["side_gap_D"] for r in asp])
+    hh = np.array([r["h_quasi_steady"] for r in asp])
+    ss = np.array([r["h_std"] for r in asp])
+    head_room = np.array([r["head_room_H"] for r in asp])
+    ax2.errorbar(gap, hh, yerr=ss, fmt="o-", color=VIOLET, ms=7, capsize=4,
+                 elinewidth=1.4, zorder=4)
+    # Alternate the label side so neighbouring annotations cannot collide.
+    for i, (g, y_, e, hr, r) in enumerate(zip(gap, hh, ss, head_room, asp)):
+        up = i % 2 == 1
+        ax2.annotate(f"{r['W']*100:.0f}$\\times${r['H']*100:.0f} cm\n"
+                     f"{hr:.2f}H head room",
+                     (g, y_), textcoords="offset points",
+                     xytext=(0, (e + 14) if up else -(e + 32)),
+                     fontsize=7.6, color=INK2, ha="center")
+    ax2.axhspan(435, 448, color=AQUA, alpha=0.15, lw=0, zorder=2)
+    ax2.text(2.35, 443, "plateau", fontsize=8.6, color=AQUA, ha="right",
+             va="center")
+    ax2.set_ylim(330, 500)
+    _style(ax2, xlabel="side clearance (bottle diameters)",
+           ylabel="$h$ (W/m$^2$K)",
+           title="Constant volume: a threshold, not an optimum")
+    fig.subplots_adjust(wspace=0.34)
+    return save(fig, "12_box_design")
+
+
 if __name__ == "__main__":
     import sys
     which = sys.argv[1:] or ["all"]
@@ -568,7 +748,8 @@ if __name__ == "__main__":
            "hvel": fig_h_vs_velocity, "aeration": fig_aeration,
            "do": fig_dissolved_oxygen, "validation": fig_validation,
            "grid": fig_grid_convergence, "crossover": fig_crossover,
-           "fields": fig_fields}
+           "fields": fig_fields, "coldbath": fig_cold_bath,
+           "levers": fig_levers, "boxdesign": fig_box_design}
     for k, fn in reg.items():
         if "all" in which or k in which:
             fn()
